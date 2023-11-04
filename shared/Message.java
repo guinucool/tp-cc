@@ -43,4 +43,12 @@ public class Message {
     public String getDest() {
         return this.dest;
     }
+
+    public boolean check(Type type, String origin, String dest) {
+        return this.type == type && this.origin.equals(origin) && this.dest.equals(dest);
+    }
+
+    public boolean check(Type type, String dest) {
+        return this.type == type && this.dest.equals(dest);
+    }
 }

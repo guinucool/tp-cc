@@ -1,7 +1,12 @@
 /* Pacote de objetos do servidor (Tracker) */
 package server;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+
+import shared.Message;
 
 /**
  * @class Node
@@ -15,9 +20,33 @@ import java.net.Socket;
  */
 public class Node {
     
+    private static int globalId = 1;
+
     private int id;
     private String ip;
     private Socket socket;
     
-    
+    public Node(Socket socket) {
+        this.id = globalId++;
+        this.socket = socket;
+    }
+
+    public void listenSocket() throws IOException, ClassNotFoundException {
+        ObjectInputStream is = new ObjectInputStream(this.socket.getInputStream());
+        ObjectOutputStream os = new ObjectOutputStream(this.socket.getOutputStream());
+
+        while (true) {
+            Message input = (Message) is.readObject();
+
+            switch (input.getType()) {
+
+                case CONNECTION:
+                    // Message check
+                    break;
+            
+                default:
+                    break;
+            }
+        }
+    }
 }

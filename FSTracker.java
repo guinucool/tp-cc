@@ -19,6 +19,7 @@ public class FSTracker {
                 sv.listen();
             } catch (IOException e) {
                 System.out.println(e.getMessage());
+                this.run();
             }
         }
     }
@@ -34,6 +35,7 @@ public class FSTracker {
             System.out.println("Server running on " + InetAddress.getLocalHost().getHostAddress() + " on port " + sv.getPort());
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            return;
         }
 
         /* Cria uma thread para executar os processos do servidor */
