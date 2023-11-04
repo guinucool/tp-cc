@@ -19,7 +19,6 @@ public class FSTracker {
                 sv.listen();
             } catch (IOException e) {
                 System.out.println(e.getMessage());
-                this.run();
             }
         }
     }
