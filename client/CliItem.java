@@ -1,6 +1,6 @@
 package client;
 
-public class ConsoleItem {
+public class CliItem {
 
     private static int globalId = 1;
 
@@ -8,7 +8,7 @@ public class ConsoleItem {
     private String name;
     private String desc;
 
-    public ConsoleItem(String name, String desc) {
+    public CliItem(String name, String desc) {
 	    this.id = globalId++;
 	    this.name = name;
 	    this.desc = desc;
