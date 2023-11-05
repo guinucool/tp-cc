@@ -24,18 +24,20 @@ public class ServerSocketRunner extends SocketRunner implements Runnable {
 
     public void run() {
         try {
-            setStream();
+            this.setStream();
 
             while (!this.checkClosed()) {
                 TrackMessage msg = this.readMessage();
                 this.lock.lock();
-                translateMessage(msg);
+                this.translateMessage(msg);
                 this.lock.unlock();
             }
-        } catch (IOException | ClassNotFoundException | InvalidMessageTypeException e) {
+        } catch (IOException | ClassNotFoundException e) {
             this.handle(e.getMessage());
             this.close();
-        } finally {
+        } catch (InvalidMessageTypeException e) {
+            this.handle(e.getMessage());
+            this.close();
             this.lock.unlock();
         }
     }
@@ -46,8 +48,19 @@ public class ServerSocketRunner extends SocketRunner implements Runnable {
 
         TrackRequest req = (TrackRequest) msg;
 
-        //if(req.getCommand() == TrackRequest.Command.QUIT)
+        if(req.getCommand() == TrackRequest.Command.QUIT)
+            quitCommand();
             
+    }
+
+    private void quitCommand() {
+        try {
+            this.sendMessage(new TrackResponse(TrackResponse.Code.QUIT));
+        } catch (IOException e) {
+            this.handle(e.getMessage());
+        } finally {
+            this.close();
+        }
     }
 
     public void shutdown() {

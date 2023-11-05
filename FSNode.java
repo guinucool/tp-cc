@@ -6,9 +6,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import shared.TrackMessage;
+import socket.ClientSocketRunner;
 
 public class FSNode {
-    private String ipTracker;
+    /*private String ipTracker;
     private int trackerPort;
     private String ipAddress;
 
@@ -37,11 +38,11 @@ public class FSNode {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
-    public static void main(String[] args) throws UnknownHostException{
+    public static void main(String[] args) throws UnknownHostException, IOException {
         // Configuração do FS_Node com o endereço IP e porta do FS_Tracker
-        String trackerIP = args[1];
+        /*String trackerIP = args[1];
         int trackerPort = Integer.valueOf(args[2]);
 
         // Configuração do endereço IP e porta do FS_Node
@@ -50,6 +51,14 @@ public class FSNode {
         FSNode fsNode = new FSNode(trackerIP, trackerPort, ipAddress);
 
         // Registra o FS_Node no FS_Tracker
-        fsNode.registerNode();
+        fsNode.registerNode();*/
+
+        ClientSocketRunner runner = new ClientSocketRunner(new Socket("192.168.1.2", 9090));
+
+        runner.setStream();
+
+        while (true) {
+            
+        }
     }
 }

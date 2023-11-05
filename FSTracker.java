@@ -1,23 +1,10 @@
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Scanner;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 import server.Server;
 
 public class FSTracker {
-
-    private static class ServerRunner implements Runnable {
-    
-        private Server sv;
-
-        public ServerRunner(Server sv) {
-            this.sv = sv;
-        }
-
-        public void run() {
-            sv.listen();
-        }
-    }
 
     public static void main(String[] args) {
 
@@ -34,8 +21,8 @@ public class FSTracker {
         }
 
         /* Cria uma thread para executar os processos do servidor */
-        Thread svr = new Thread(new ServerRunner(sv));
-        svr.start();
+        Thread thread = new Thread(sv);
+        thread.start();
 
         /* Espera pelo comando de término do servidor */
         Scanner sc = new Scanner(System.in);
@@ -43,13 +30,9 @@ public class FSTracker {
         sc.close();
 
         /* Fecha o servidor e termina a thread */
+        sv.stop();
         try {
-            sv.stop();
-            svr.join();
-        } catch (IOException e) {
-            System.out.println("Server didn't close sucessfully. Data might have corrupted.");
-        } catch (InterruptedException e) {
-            System.out.println("Connection sockets didn't close sucessfully. Data might have corrupted.");
-        }
+            thread.join();
+        } catch (InterruptedException e) {}
     }
 }

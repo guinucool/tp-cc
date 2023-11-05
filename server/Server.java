@@ -3,61 +3,45 @@ package server;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class Server {
+import exception.*;
+import handler.*;
+import socket.*;
+
+public class Server implements Runnable {
     
-    private ServerSocket sv;
+    private ServerSocket server;
     private int port;
-    private Tracker tracker;
     private List<Thread> threads;
-
-    public static class ServerException extends Exception {
-    
-        public ServerException(String msg) {
-            super(msg);
-        }
-    }
-
-    private static class SocketRunner implements Runnable {
-
-        private Tracker tracker;
-        private Socket socket;
-
-        public SocketRunner(Tracker tracker, Socket socket) {
-            this.tracker = tracker;
-            this.socket = socket;
-        }
-
-        public void run() {
-            try {
-                Node n = new Node(this.socket);
-                n.listenRequest();
-            } catch (IOException e) {
-                System.out.println("Socket connection was lost. Closing socket...");
-            } finally {
-                try {
-                    this.socket.close();
-                } catch (IOException e) {
-                    System.out.println("Socket disconnect incorrectly. Data may have been corrupted.");
-                }
-            }
-        }
-    }
+    private List<ServerSocketRunner> sockets;
+    private ExceptionHandler handler;
+    private ReentrantLock lock;
 
     public Server() {
+        this.setHandler();
         this.port = 9090;
-        this.threads = new ArrayList<Thread>();
+        this.threads = new ArrayList<>();
+        this.sockets = new ArrayList<>();
+        this.lock = new ReentrantLock();
     }
 
-    public Server(int port) throws ServerException {
-        setPort(port);
-        this.threads = new ArrayList<Thread>();
+    public Server(int port) throws InvalidServerPort {
+        this.setPort(port);
+        this.setHandler();
+        this.threads = new ArrayList<>();
+        this.sockets = new ArrayList<>();
+        this.lock = new ReentrantLock();
     }
 
-    private void setPort(int port) throws ServerException {
+    private void setHandler() {
+        this.handler = new NoHandler();
+    }
+
+    private void setPort(int port) throws InvalidServerPort {
         if (port < 0 || port > 65535)
-            throw new ServerException("Server port " + port + " is invalid.");
-        
+            throw new InvalidServerPort("" + port);
+
         this.port = port;
     }
 
@@ -66,25 +50,49 @@ public class Server {
     }
 
     public void start() throws IOException {
-        this.sv = new ServerSocket(this.port);
+        this.server = new ServerSocket(this.port);
     }
 
-    public void listen() {
-        while (true) {
+    public void run() {
+        while (!(this.server.isClosed())) {
             try {
-                Socket socket = this.sv.accept();
+                Socket socket = this.server.accept();
+                this.lock.lock();
 
-                Thread stt = new Thread(new SocketRunner(this.tracker, socket));
-                stt.start();
+                ServerSocketRunner runner = new ServerSocketRunner(socket);
+                Thread thread = new Thread(runner);
+                thread.start();
 
-                this.threads.add(stt);
+                this.threads.add(thread);
+                this.sockets.add(runner);
+
+                this.lock.unlock();
             } catch (IOException e) {
-                return;
+                this.handler.handle(e.getMessage());
             }
         }
     }
 
-    public void stop() throws IOException {
-        this.sv.close();
+    public void stop() {
+        this.lock.lock();
+
+        try {
+            this.server.close();
+        } catch (IOException e) {
+            this.handler.handle(e.getMessage());
+        }
+
+        for (ServerSocketRunner socketRunner : this.sockets)
+            socketRunner.shutdown();
+
+        for (Thread thread : this.threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                this.handler.handle(e.getMessage());
+            }
+        }
+
+        this.lock.unlock();
     }
 }
