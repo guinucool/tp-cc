@@ -15,11 +15,7 @@ public class FSTracker {
         }
 
         public void run() {
-            try {
-                sv.listen();
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
+            sv.listen();
         }
     }
 
@@ -33,7 +29,7 @@ public class FSTracker {
             sv.start();
             System.out.println("Server running on " + InetAddress.getLocalHost().getHostAddress() + " on port " + sv.getPort());
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Couldn't start server. Perhaps the port is already in use?");
             return;
         }
 
@@ -51,9 +47,9 @@ public class FSTracker {
             sv.stop();
             svr.join();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Server didn't close sucessfully. Data might have corrupted.");
         } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Connection sockets didn't close sucessfully. Data might have corrupted.");
         }
     }
 }

@@ -1,10 +1,8 @@
 package server;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 public class Server {
     
@@ -13,7 +11,7 @@ public class Server {
     private Tracker tracker;
     private List<Thread> threads;
 
-    private class ServerException extends Exception {
+    public static class ServerException extends Exception {
     
         public ServerException(String msg) {
             super(msg);
@@ -31,7 +29,18 @@ public class Server {
         }
 
         public void run() {
-
+            try {
+                Node n = new Node(this.socket);
+                n.listenRequest();
+            } catch (IOException e) {
+                System.out.println("Socket connection was lost. Closing socket...");
+            } finally {
+                try {
+                    this.socket.close();
+                } catch (IOException e) {
+                    System.out.println("Socket disconnect incorrectly. Data may have been corrupted.");
+                }
+            }
         }
     }
 
@@ -45,9 +54,9 @@ public class Server {
         this.threads = new ArrayList<Thread>();
     }
 
-    public void setPort(int port) throws ServerException {
-        if (port < 0 || port > 65534)
-            throw new ServerException("Server port is invalid (" + port + ")");
+    private void setPort(int port) throws ServerException {
+        if (port < 0 || port > 65535)
+            throw new ServerException("Server port " + port + " is invalid.");
         
         this.port = port;
     }
@@ -60,14 +69,18 @@ public class Server {
         this.sv = new ServerSocket(this.port);
     }
 
-    public void listen() throws IOException {
+    public void listen() {
         while (true) {
-            Socket socket = this.sv.accept();
+            try {
+                Socket socket = this.sv.accept();
 
-            Thread stt = new Thread(new SocketRunner(this.tracker, socket));
-            stt.start();
+                Thread stt = new Thread(new SocketRunner(this.tracker, socket));
+                stt.start();
 
-            this.threads.add(stt);
+                this.threads.add(stt);
+            } catch (IOException e) {
+                return;
+            }
         }
     }
 

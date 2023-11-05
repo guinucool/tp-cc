@@ -1,33 +1,28 @@
 package shared;
 
-public class TrackRequest {
+public class TrackRequest extends TrackMessage {
 
     public enum Command {
-        REGS,
-        GET
+        REGS, /* Registar node */
+        UPTF, /* Update da lista de ficheiros */
+        UPTB, /* Update da lista de blocos */
+        GET,  /* Procura de ficheiro */
+        QUIT  /* Saída do servidor */
     }
 
-    private Command cmd;
-    private String args;
+    private Command command;
 
-    public TrackRequest(Command cmd, String args) {
-        this.cmd = cmd;
-        this.args = args;
+    public TrackRequest(Command cmd) {
+        super();
+        this.command = cmd;
+    }
+
+    public TrackRequest(Command cmd, String arg) {
+        super(arg);
+        this.command = cmd;
     }
 
     public Command getCommand() {
-        return this.cmd;
+        return this.command;
     }
-
-    public String getArguments() {
-        return this.args;
-    }   
-
-    public Command setCommand(Command cmd) {
-        return this.cmd = cmd;
-    }
-
-    public String setArguments(String args) {
-        return this.args = args;
-    }  
 }

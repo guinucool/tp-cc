@@ -1,34 +1,31 @@
 package shared;
 
-public class TrackResponse {
+public class TrackResponse extends TrackMessage {
     
     public enum Code {
-        FAIL,
-        SUC    
+        LURV, /* Update request após login */
+        URSU, /* Update request registado com sucesso */
+        LBFS, /* Localização dos ficheiros e dos seus blocos */
+        QUIT, /* Pedido de saída bem sucedido */
+        INVA, /* Argumento inválido */
+        INVN, /* Node inválido */
+        FAIL  /* Algo de errado ocorreu */
     }
     
     private Code code;
-    private String args;
 
-    public TrackResponse(Code code, String args) {
+    public TrackResponse(Code code) {
+        super();
         this.code = code;
-        this.args = args;
+    }
+
+    public TrackResponse(Code code, String arg) {
+        super(arg);
+        this.code = code;
     }
 
     public Code getCode() {
         return this.code;
     }
-
-    public String getArguments() {
-        return this.args;
-    }  
-    
-    public Code setCode(Code code) {
-        return this.code = code;
-    }
-
-    public String setArguments(String args) {
-        return this.args = args;
-    }   
 }
 

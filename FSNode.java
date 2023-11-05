@@ -5,7 +5,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import shared.Message;
+import shared.TrackMessage;
 
 public class FSNode {
     private String ipTracker;
@@ -24,12 +24,12 @@ public class FSNode {
              ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream())) {
 
             // Envia uma mensagem de registo para o FS_Tracker
-            Message registrationMessage = new Message(Message.Type.CONNECTION, ipAddress, ipTracker);
+            TrackMessage registrationMessage = new TrackMessage(TrackMessage.Type.CONNECTION, ipAddress, ipTracker);
             objectOutputStream.writeObject(registrationMessage);
 
             // Recebe a resposta do FS_Tracker
-            Message responseMessage = (Message) objectInputStream.readObject();
-            if (responseMessage.getType() == Message.Type.CONFIRMATION) {
+            TrackMessage responseMessage = (TrackMessage) objectInputStream.readObject();
+            if (responseMessage.getType() == TrackMessage.Type.CONFIRMATION) {
                 System.out.println("Registration completed on FS_Tracker");
             } else {
                 System.out.println("Registration failed on FS_Tracker");
