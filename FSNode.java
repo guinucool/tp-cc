@@ -53,12 +53,16 @@ public class FSNode {
         // Registra o FS_Node no FS_Tracker
         fsNode.registerNode();*/
 
-        ClientSocketRunner runner = new ClientSocketRunner(new Socket("192.168.1.2", 9090));
+        /*if (args.length > 3 || args.length < 2) {
+            System.out.println("Invalid arguments.");
+            return;
+        }*/
 
+        ClientSocketRunner runner = new ClientSocketRunner(new Socket("192.168.1.2", 9090));
         runner.setStream();
 
-        while (true) {
-            
-        }
+        ClientC console = new ClientC();
+
+        console.start();
     }
 }
