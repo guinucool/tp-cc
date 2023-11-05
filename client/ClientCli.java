@@ -3,14 +3,14 @@ import java.util.*;
 
 import exception.*;
 
-public class Console {
+public class ClientCli {
 
     private Scanner sc;
-	private List<ConsoleItem> items;
+	private List<CliItem> items;
 
 	private Client client;
     
-    public Console(Client client) {
+    public ClientCli(Client client) {
 		this.sc = new Scanner(System.in);
 		this.items = new ArrayList<>();
 
@@ -24,19 +24,19 @@ public class Console {
 
     private void printHeader() {
         System.out.println("+-----------------------+");
-        System.out.println("|    Client--Console    |");
+        System.out.println("|      Client-CLI       |");
         System.out.println("+-----------------------+");
 		System.out.println("");
     }
 
 	private void printInfo() {
-		for (ConsoleItem item : this.items) {
+		for (CliItem item : this.items) {
 			System.out.println(item.toInfo());
 		}
 	}
 
 	public void addItem(String name, String desc) {
-		this.items.add(new ConsoleItem(name, desc));
+		this.items.add(new CliItem(name, desc));
 	}
 
 	private void runCommand(String cmd) throws InvalidArgumentException {

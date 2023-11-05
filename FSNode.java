@@ -1,7 +1,6 @@
 import java.io.*;
 
 import client.*;
-import client.Console;
 
 public class FSNode {
     
@@ -31,7 +30,7 @@ public class FSNode {
             return;
         }
 
-        Console console = new Console(client);
-        console.start();
+        ClientCli cli = new ClientCli(client);
+        cli.start();
     }
 }
