@@ -17,6 +17,18 @@ public class ClientSocketRunner extends SocketRunner {
         this.setOutputStream();
     }
 
+    public void run(TrackMessage msg) {
+        try {
+            this.sendMessage(msg);
+
+            TrackMessage rep = this.readMessage();
+            this.translateMessage(rep);
+        } catch (IOException | ClassNotFoundException | InvalidMessageTypeException e) {
+            this.handle(e.getMessage());
+            this.close();
+        }
+    }
+
     public void translateMessage(TrackMessage msg) throws InvalidMessageTypeException {
         if (msg instanceof TrackRequest)
             throw new InvalidMessageTypeException("Received TrackRequest on client.");

@@ -1,20 +1,20 @@
+package client;
 import java.util.*;
 
 import exception.*;
-import socket.*;
 
-public class ClientC
-{
+public class Console {
+
     private Scanner sc;
 	private List<ConsoleItem> items;
-	private boolean exit;
 
-	private ClientSocketRunner runner;
+	private Client client;
     
-    public ClientC() {
+    public Console(Client client) {
 		this.sc = new Scanner(System.in);
 		this.items = new ArrayList<>();
-		this.exit = false;
+
+		this.client = client;
     }
 
 	private String readCommand() {
@@ -47,8 +47,7 @@ public class ClientC
 
 		switch (args[0]) {
 			case "quit":
-				runner.
-				this.exit = true;
+				this.client.close();
 				break;
 		
 			default:
@@ -60,7 +59,7 @@ public class ClientC
 		this.printHeader();
 		this.printInfo();
 
-		while (!exit) {
+		while (!this.client.checkClosed()) {
 			String cmd = this.readCommand();
 			try {
 				this.runCommand(cmd);

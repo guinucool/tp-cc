@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import server.Server;
+import server.*;
 
 public class FSTracker {
 

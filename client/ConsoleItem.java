@@ -1,3 +1,5 @@
+package client;
+
 public class ConsoleItem {
 
     private static int globalId = 1;
