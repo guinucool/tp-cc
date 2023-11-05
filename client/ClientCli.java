@@ -1,20 +1,20 @@
+package client;
 import java.util.*;
 
 import exception.*;
-import socket.*;
 
-public class ClientC
-{
+public class ClientCli {
+
     private Scanner sc;
-	private List<ConsoleItem> items;
-	private boolean exit;
+	private List<CliItem> items;
 
-	private ClientSocketRunner runner;
+	private Client client;
     
-    public ClientC() {
+    public ClientCli(Client client) {
 		this.sc = new Scanner(System.in);
 		this.items = new ArrayList<>();
-		this.exit = false;
+
+		this.client = client;
     }
 
 	private String readCommand() {
@@ -24,19 +24,19 @@ public class ClientC
 
     private void printHeader() {
         System.out.println("+-----------------------+");
-        System.out.println("|    Client--Console    |");
+        System.out.println("|      Client-CLI       |");
         System.out.println("+-----------------------+");
 		System.out.println("");
     }
 
 	private void printInfo() {
-		for (ConsoleItem item : this.items) {
+		for (CliItem item : this.items) {
 			System.out.println(item.toInfo());
 		}
 	}
 
 	public void addItem(String name, String desc) {
-		this.items.add(new ConsoleItem(name, desc));
+		this.items.add(new CliItem(name, desc));
 	}
 
 	private void runCommand(String cmd) throws InvalidArgumentException {
@@ -47,8 +47,7 @@ public class ClientC
 
 		switch (args[0]) {
 			case "quit":
-				runner.
-				this.exit = true;
+				this.client.close();
 				break;
 		
 			default:
@@ -60,7 +59,7 @@ public class ClientC
 		this.printHeader();
 		this.printInfo();
 
-		while (!exit) {
+		while (!this.client.checkClosed()) {
 			String cmd = this.readCommand();
 			try {
 				this.runCommand(cmd);
