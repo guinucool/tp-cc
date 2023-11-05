@@ -16,42 +16,53 @@ public class NFile
     private long byteS;
 
     public NFile(String path) {
-	File f = new File(path);
-	String hash;
-	try {hash = md5checksum(f);}
-	catch (Exception e) {hash = NHASH;}
+        File f = new File(path);
+        String hash;
+
+        try {
+            hash = md5checksum(f);
+        }
+        catch (Exception e) {
+            hash = NHASH;
+        }
+
         this.filename = f.getName();
-	String ext;
-	try {ext = Files.probeContentType(f.toPath());}
-	catch (Exception e) {ext = "";}
-	this.tipo = ext;
+        String ext;
+
+        try {
+            ext = Files.probeContentType(f.toPath());
+        }
+        catch (Exception e) {
+            ext = "";
+        }
+
+        this.tipo = ext;
         this.desc = "";
-	this.byteS = f.length();
+        this.byteS = f.length();
     }
 
-    public String md5checksum(File file)
-	throws IOException, NoSuchAlgorithmException
-    {
-	MessageDigest digest = MessageDigest.getInstance("MD5");
+    public String md5checksum(File file) throws IOException, NoSuchAlgorithmException {
+	    MessageDigest digest = MessageDigest.getInstance("MD5");
         FileInputStream fis = new FileInputStream(file);
-
         byte[] byteArray = new byte[1024];
         int bytesCount = 0;
+
         while ((bytesCount = fis.read(byteArray)) != -1)
         {
             digest.update(byteArray, 0, bytesCount);
-        };
+        }
  
         fis.close();
- 
-        byte[] bytes = digest.digest();
 
+        byte[] bytes = digest.digest();
         StringBuilder sb = new StringBuilder();
+
         for (int i = 0; i < bytes.length; i++) {
 	    sb.append(Integer
 		      .toString((bytes[i] & 0xff) + 0x100, 16)
 		      .substring(1));
         }
+        
         return sb.toString();
     }
 }
