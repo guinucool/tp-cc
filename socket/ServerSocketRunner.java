@@ -5,16 +5,18 @@ import java.net.*;
 import java.util.concurrent.locks.*;
 
 import exception.*;
+import server.*;
 import shared.*;
 
 public class ServerSocketRunner extends SocketRunner implements Runnable {
 
     private ReentrantLock lock;
-    // Tracker
+    private Tracker tracker;
     
-    public ServerSocketRunner(Socket socket) {
+    public ServerSocketRunner(Socket socket, Tracker tracker) {
         super(socket);
         this.lock = new ReentrantLock();
+        this.tracker = tracker;
     }
 
     public void setStream() throws IOException {
@@ -48,12 +50,33 @@ public class ServerSocketRunner extends SocketRunner implements Runnable {
 
         TrackRequest req = (TrackRequest) msg;
 
+        if(req.getCommand() == TrackRequest.Command.REGS)
+            this.registerNode(this.getDestIP());
+
         if(req.getCommand() == TrackRequest.Command.QUIT)
-            quitCommand();
+            this.quitCommand(this.getDestIP());
             
     }
 
-    private void quitCommand() {
+    private void registerNode(String ip) {
+        try {
+            try {
+                this.tracker.addNode(ip);
+                System.out.println("Registered " + ip);
+                this.sendMessage(new TrackResponse(TrackResponse.Code.LURV));
+            } catch (NodeAlreadyExistsException e) {
+                this.sendMessage(new TrackResponse(TrackResponse.Code.INVN));
+                this.close();
+            }
+        } catch (IOException e) {
+            this.handle(e.getMessage());
+            this.close();
+        }
+    }
+
+    private void quitCommand(String ip) {
+        this.tracker.removeSingleNode(ip);
+
         try {
             this.sendMessage(new TrackResponse(TrackResponse.Code.QUIT));
         } catch (IOException e) {

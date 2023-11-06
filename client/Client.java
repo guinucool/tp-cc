@@ -25,6 +25,7 @@ public class Client {
         Socket socket = new Socket(this.server, this.port);
         this.runner = new ClientSocketRunner(socket);
         this.runner.setStream();
+        this.runner.run(new TrackRequest(TrackRequest.Command.REGS));
     }
 
     public void close() {

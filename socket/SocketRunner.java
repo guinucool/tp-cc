@@ -54,4 +54,12 @@ public abstract class SocketRunner {
             this.handle(e.getMessage());
         }
     }
+
+    public String getSourceIP() {
+        return this.socket.getLocalAddress().getHostAddress();
+    }
+
+    public String getDestIP() {
+        return this.socket.getRemoteSocketAddress().toString().substring(1).split(":")[0];
+    }
 }

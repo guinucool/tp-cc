@@ -14,7 +14,7 @@ public class FSTracker {
         /* Início do servidor */
         try {
             sv.start();
-            System.out.println("Server running on " + InetAddress.getLocalHost().getHostAddress() + " on port " + sv.getPort());
+            System.out.println("Server running on " + sv.getIp() + " on port " + sv.getPort());
         } catch (IOException e) {
             System.out.println("Couldn't start server. Perhaps the port is already in use?");
             return;

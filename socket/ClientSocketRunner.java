@@ -35,7 +35,10 @@ public class ClientSocketRunner extends SocketRunner {
 
         TrackResponse rep = (TrackResponse) msg;
 
-        if (rep.getCode() == TrackResponse.Code.QUIT)
+        if (rep.getCode() == TrackResponse.Code.LURV)
+            System.out.println("Register was sucessful!");
+
+        if (rep.getCode() == TrackResponse.Code.QUIT || rep.getCode() == TrackResponse.Code.INVN)
             this.close();
     }
 

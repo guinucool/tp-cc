@@ -18,12 +18,15 @@ public class Server implements Runnable {
     private ExceptionHandler handler;
     private ReentrantLock lock;
 
+    private Tracker tracker;
+
     public Server() {
         this.setHandler();
         this.port = 9090;
         this.threads = new ArrayList<>();
         this.sockets = new ArrayList<>();
         this.lock = new ReentrantLock();
+        this.tracker = new Tracker();
     }
 
     public Server(int port) throws InvalidServerPort {
@@ -32,6 +35,7 @@ public class Server implements Runnable {
         this.threads = new ArrayList<>();
         this.sockets = new ArrayList<>();
         this.lock = new ReentrantLock();
+        this.tracker = new Tracker();
     }
 
     private void setHandler() {
@@ -49,6 +53,19 @@ public class Server implements Runnable {
         return this.port;
     }
 
+    public String getIp() throws SocketException {
+        String ip = "";
+        
+        Enumeration<NetworkInterface> networkInterfaceEnumeration = NetworkInterface.getNetworkInterfaces();
+        while( networkInterfaceEnumeration.hasMoreElements()) {
+            for ( InterfaceAddress interfaceAddress : networkInterfaceEnumeration.nextElement().getInterfaceAddresses())
+                if ( interfaceAddress.getAddress().isSiteLocalAddress())
+                    ip = interfaceAddress.getAddress().getHostAddress();
+        }
+
+        return ip;
+    }
+
     public void start() throws IOException {
         this.server = new ServerSocket(this.port);
     }
@@ -59,7 +76,7 @@ public class Server implements Runnable {
                 Socket socket = this.server.accept();
                 this.lock.lock();
 
-                ServerSocketRunner runner = new ServerSocketRunner(socket);
+                ServerSocketRunner runner = new ServerSocketRunner(socket, this.tracker);
                 Thread thread = new Thread(runner);
                 thread.start();
 
