@@ -83,6 +83,7 @@ public class ServerSocketRunner extends SocketRunner implements Runnable {
             this.handle(e.getMessage());
         } finally {
             this.close();
+            System.out.println("Disconnected " + ip);
         }
     }
 

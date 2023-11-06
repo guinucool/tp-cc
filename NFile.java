@@ -71,7 +71,9 @@ public class NFile
         File path = new File(args[0]);
         File fileList[] = path.listFiles();
 
-        NFile nf = new NFile(fileList[0].getAbsolutePath()); 
+        System.out.println(fileList[0]);
+
+        NFile nf = new NFile(fileList[1].getAbsolutePath()); 
 
         System.out.println(nf.hash);
     }
