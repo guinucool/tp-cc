@@ -20,10 +20,10 @@ public class NFile
         String hash;
 
         try {
-            hash = md5checksum(f);
+            this.hash = md5checksum(f);
         }
         catch (Exception e) {
-            hash = NHASH;
+            this.hash = NHASH;
         }
 
         this.filename = f.getName();
@@ -64,5 +64,15 @@ public class NFile
         }
         
         return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        
+        File path = new File(args[0]);
+        File fileList[] = path.listFiles();
+
+        NFile nf = new NFile(fileList[0].getAbsolutePath()); 
+
+        System.out.println(nf.hash);
     }
 }
