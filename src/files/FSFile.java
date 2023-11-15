@@ -6,19 +6,19 @@ import filexcp.*;
  * Objeto que regista, na generalidade dos casos, um ficheiro do sistema.
  * 
  * @param hashlist
- *      A lista de todas as hashcodes registadas até agora no programa (para evitar repetições)
+ *      A lista de todas as hashcodes registadas até agora no programa (para evitar repetições).
  * 
  * @param hash
- *      A hashcode do ficheiro
+ *      A hashcode do ficheiro.
  * 
  * @param name
- *      O nome do ficheiro
+ *      O nome do ficheiro.
  * 
  * @param extension
- *      A extensão do ficheiro
+ *      A extensão do ficheiro.
  * 
  * @param size
- *      O tamanho do ficheiro em bytes
+ *      O tamanho do ficheiro em bytes.
  */
 public abstract class FSFile {
 
@@ -123,11 +123,10 @@ public abstract class FSFile {
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append("(FSFile)Hash:").append(this.hash);
-        builder.append("Name:").append(this.name);
-        builder.append("Extension:").append(this.extension);
-        builder.append("Size:").append(this.size);
-        builder.append(";");
+        builder.append("(FSFile)Hash:").append(this.hash).append(";");
+        builder.append("Name:").append(this.name).append(";");
+        builder.append("Extension:").append(this.extension).append(";");
+        builder.append("Size:").append(this.size).append(";");
 
         return builder.toString();
     }
