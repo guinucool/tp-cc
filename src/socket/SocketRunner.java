@@ -30,9 +30,17 @@ public abstract class SocketRunner {
     private Lock lock = new ReentrantLock();
 
     /* Constructors */
-    public SocketRunner(Socket socket) throws SocketRunnerException, IOException {
+    public SocketRunner(Socket socket) throws SocketRunnerException {
+
         this.setSocket(socket);
-        this.setStream();
+
+        /* Tenta abrir o stream e fecha o socket em caso de falhanço */
+        try {
+            this.setStream();
+        } catch (IOException e) {
+            this.close();
+            throw new OneSocketSideClosedException(e.getMessage());
+        }
     }
 
     /* Setters */
@@ -110,5 +118,10 @@ public abstract class SocketRunner {
         } finally {
             this.lock.unlock();
         }
+    }
+
+    /* Checkers */
+    public boolean isClosed() {
+        return this.socket.isClosed();
     }
 }
