@@ -61,6 +61,10 @@ public class FSBlock {
         this.nodes.add(node);
     }
 
+    public void removeNode(Node node){
+        this.nodes.remove(node);
+    }
+
     public boolean equals(Object o) {
 
         if (this == o)

@@ -1,22 +1,27 @@
 import java.util.*;
 
-public class TrackerFile {
+import filexcp.FileException;
+
+public class TrackerFile extends FSFile{
     
     private long blocksize;
     private List<FSBlock> blocks;
 
     /* Constructors */
     public TrackerFile(){
+        super();
         this.blocksize = 0;
         this.blocks = new ArrayList<FSBlock>();
     }
 
-    public TrackerFile(long blocksize, List<FSBlock> blocks){
+    public TrackerFile(String hash, String name, String extension, long size, long blocksize, List<FSBlock> blocks) throws FileException{
+        super(hash,name,extension,size);
         this.setBlocksize(blocksize);
         this.setBlocks(blocks);
     }
 
     public TrackerFile(TrackerFile tf){
+        super(tf);
         this.setBlocksize(tf.blocksize);
         this.setBlocks(tf.blocks);
     }
@@ -38,7 +43,7 @@ public class TrackerFile {
         return this.blocksize;
     }
 
-    public List<FSBlock> getNodes(){
+    public List<FSBlock> getBlocks(){
         ArrayList<FSBlock> res = new ArrayList<FSBlock>();
         for(FSBlock a: this.blocks)
             res.add(a);
@@ -48,7 +53,7 @@ public class TrackerFile {
 
     /* Auxiliar */
 
-    public void addNode(FSBlock block){
+    public void addBlock(FSBlock block){
         this.blocks.add(block);
     }
 
