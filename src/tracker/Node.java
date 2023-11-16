@@ -82,8 +82,8 @@ public class Node {
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append("(Node)ip:").append(ip).append(";");
-        builder.append("port:").append(port).append(";");
+        builder.append("(Node)ip:").append(this.ip).append(";");
+        builder.append("port:").append(this.port).append(";");
 
         return builder.toString();
     }

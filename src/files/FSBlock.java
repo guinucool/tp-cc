@@ -1,13 +1,15 @@
 import java.util.*;
 
+import filexcp.*;
+
 /**
- * Objeto que regista, na generalidade dos casos, um ficheiro do sistema.
+ * Objeto que regista um bloco de um ficheiro do sistema.
  * 
  * @param offset
- *      O número do bloco
+ *      O offset do bloco em posição (0,1,2,3,etc...).
  * 
  * @param nodes
- *      A lista de todos os nodes que possuem o block offset
+ *      A lista de todos os nodes que possuem este bloco.
  */
 public class FSBlock {
     
@@ -15,56 +17,52 @@ public class FSBlock {
     private List<Node> nodes;
 
     /* Constructors */
-    public FSBlock(){
+    public FSBlock() {
         this.offset = 0;
         this.nodes = new ArrayList<Node>();
     }
 
-    public FSBlock(int offset,List<Node> nodes){
+    public FSBlock(int offset, Node node) throws BlockException {
         this.setOffset(offset);
-        this.setNodes(nodes);
-    }
-
-    public FSBlock(FSBlock fsblock){
-        this.setOffset(fsblock.offset);
-        this.setNodes(fsblock.nodes);
-    }
-
-    /* Setters */
-    public void setOffset(int offset){
-        this.offset = offset;
-    }
-
-    public void setNodes(List<Node> nodes){
-        this.nodes.removeAll(this.nodes);
-        this.nodes = new ArrayList<Node>();
-        for(Node a: nodes)
-            this.nodes.add(a);
-    }
-
-    /* Getters */
-    public int getOffset(){
-        return this.offset;
-    }
-
-    public List<Node> getNodes(){
-        ArrayList<Node> res = new ArrayList<Node>();
-        for(Node a: this.nodes)
-            res.add(a);
-
-        return res;
-    }
-
-    /* Auxiliar */
-
-    public void addNode(Node node){
+        this.nodes = new ArrayList<>();
         this.nodes.add(node);
     }
 
-    public void removeNode(Node node){
-        this.nodes.remove(node);
+    public FSBlock(FSBlock block) {
+        this.offset = block.offset;
+        this.nodes = this.getNodes();
     }
 
+    /* Setters */
+    public void setOffset(int offset) throws InvalidBlockOffsetException {
+        if (offset < 0)
+            throw new InvalidBlockOffsetException("" + offset);
+
+        this.offset = offset;
+    }
+
+    public void addNode(Node node) throws NodeExistsBlockException {
+        if (this.nodes.contains(node))
+            throw new NodeExistsBlockException(node.toString());
+
+        this.nodes.add(node);
+    }
+
+    public void removeNode(Node node) {
+        if (this.nodes.contains(node))
+            this.nodes.remove(node);
+    }
+
+    /* Getters */
+    public int getOffset() {
+        return this.offset;
+    }
+
+    public List<Node> getNodes() {
+        return new ArrayList<Node>(this.nodes);
+    }
+
+    /* Auxiliar */
     public boolean equals(Object o) {
 
         if (this == o)
@@ -73,11 +71,21 @@ public class FSBlock {
         if ((o == null) || (this.getClass() != o.getClass()))
             return false;
 
-        FSBlock fsblock = (FSBlock) o;
-        return this.offset == fsblock.offset && this.nodes.equals(fsblock.nodes);
+        FSBlock block = (FSBlock) o;
+        return this.offset == block.offset && this.nodes.equals(block.nodes);
     }
 
     public Object clone() {
         return new FSBlock(this);
+    }
+
+    public String toString() {
+        
+        StringBuilder builder =  new StringBuilder();
+
+        builder.append("(FSBlock)offset:").append(this.offset).append(";");
+        builder.append("nodes:").append(this.nodes).append(";");
+
+        return builder.toString();
     }
 }

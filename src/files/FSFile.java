@@ -123,10 +123,10 @@ public abstract class FSFile {
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append("(FSFile)Hash:").append(this.hash).append(";");
-        builder.append("Name:").append(this.name).append(";");
-        builder.append("Extension:").append(this.extension).append(";");
-        builder.append("Size:").append(this.size).append(";");
+        builder.append("(FSFile)hash:").append(this.hash).append(";");
+        builder.append("name:").append(this.name).append(";");
+        builder.append("extension:").append(this.extension).append(";");
+        builder.append("size:").append(this.size).append(";");
 
         return builder.toString();
     }
