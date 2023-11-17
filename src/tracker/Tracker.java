@@ -1,31 +1,26 @@
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.*;
+import java.util.concurrent.locks.*;
 
 public class Tracker {
     private Map<String,Node> nodes;
     private Map<String,TrackerFile> files;  
-    private final ReentrantLock lock;
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /* Constructors */
 
     public Tracker() {
         this.nodes = new HashMap<>();
         this.files = new HashMap<>();
-        this.lock = new ReentrantLock();
     }
 
     public Tracker(Map<String, Node> nodes, Map<String, TrackerFile> files) {
         this.setNodes(nodes);
         this.setFiles(files);
-        this.lock = new ReentrantLock();
     }
 
     public Tracker(Tracker tracker) {
         this.setNodes(tracker.nodes);
         this.setFiles(tracker.files);
-        this.lock = new ReentrantLock();
     }
 
     /* Setters */
@@ -48,25 +43,25 @@ public class Tracker {
 
     /* Métodos para manipular Nodes */
     public void addNode(Node node) {
-        lock.lock();
+        lock.writeLock().lock();
         try {
             this.nodes.put(node.getIp(), node);
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
     }
 
     public Node getNode(String ip) {
-        lock.lock();
+        lock.readLock().lock();
         try {
             return this.nodes.get(ip);
         } finally {
-            lock.unlock();
+            lock.readLock().unlock();
         }
     }
 
     public void removeNode(String ip) {
-        lock.lock();
+        lock.writeLock().lock();
         try {
             this.nodes.remove(ip);
 
@@ -81,35 +76,35 @@ public class Tracker {
                 }
             }
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
     }
 
     /* Métodos para manipular TrackerFiles */
     public void addFile(TrackerFile trackerFile) {
-        lock.lock();
+        lock.writeLock().lock();
         try {
             this.files.put(trackerFile.getName(), trackerFile);
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
     }
 
     public TrackerFile getTrackerFile(String filename) {
-        lock.lock();
+        lock.readLock().lock();
         try {
             return this.files.get(filename);
         } finally {
-            lock.unlock();
+            lock.readLock().unlock();
         }
     }
 
     public void removeFile(String filename) {
-        lock.lock();
+        lock.writeLock().lock();
         try {
             this.files.remove(filename);
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
     }
 }
