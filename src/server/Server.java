@@ -8,6 +8,18 @@ import java.util.concurrent.locks.*;
 import sockexcp.*;
 import thread.*;
 
+/**
+ * Objeto que define o servidor.
+ * 
+ * @param listener
+ *      Objeto que espera e "ouve" pela conexão de novos sockets.
+ * 
+ * @param runners
+ *      Os vários runners que correm os sockets ligados ao servidor.
+ * 
+ * @param threads
+ *      As threads que sustentam os vários runners.
+ */
 public class Server {
     
     private ServerSocket listener;

@@ -4,6 +4,15 @@ import java.util.concurrent.locks.*;
 import filexcp.*;
 import trackexcp.*;
 
+/**
+ * Objeto que define como o tracker funciona e armazena informação.
+ * 
+ * @param files
+ *      Os ficheiros que existem no sistema.
+ * 
+ * @param nodes
+ *      Os nodes que estão ligados ao servidor.
+ */
 public class Tracker {
 
     private Map<String,TrackerFile> files;

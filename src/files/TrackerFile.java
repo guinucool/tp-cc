@@ -2,6 +2,18 @@ import java.util.*;
 
 import filexcp.*;
 
+/**
+ * Objeto que define um ficheiro na visão do tracker.
+ * 
+ * @param MAX_BLOCK
+ *      O número máximo de blocos em que um ficheiro pode ser dividido.
+ * 
+ * @param blocksize
+ *      O tamanho de um bloco do ficheiro.
+ * 
+ * @param blocks
+ *      A lista de blocos, e respetivos nodes que os têm, de um ficheiro.
+ */
 public class TrackerFile extends FSFile {
 
     private final int MAX_BLOCK = 4096;
