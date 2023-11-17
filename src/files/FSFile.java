@@ -1,5 +1,3 @@
-import java.util.*;
-
 import filexcp.*;
 
 /**
@@ -12,10 +10,7 @@ import filexcp.*;
  *      A hashcode do ficheiro.
  * 
  * @param name
- *      O nome do ficheiro.
- * 
- * @param extension
- *      A extensão do ficheiro.
+ *      O nome e a extensão do ficheiro.
  * 
  * @param size
  *      O tamanho do ficheiro em bytes.
@@ -23,43 +18,32 @@ import filexcp.*;
 public abstract class FSFile {
 
     private static final String emptyhash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-    private static List<String> hashlist = new ArrayList<>();
 
     private String hash;
     private String name;
-    private String extension;
     private long size;
     
     /* Constructors */
     public FSFile() {
         this.hash = emptyhash;
         this.name = "";
-        this.extension = "";
         this.size = 0;
     }
 
     public FSFile (String hash, String name, String extension, long size) throws FileException {
         this.setHash(hash);
         this.setName(name);
-        this.setExtension(extension);
         this.setSize(size);
     }
 
     public FSFile (FSFile file) {
         this.hash = file.hash;
         this.name = file.name;
-        this.extension = file.extension;
         this.size = file.size;
     }
 
     /* Setters */
-    private void setHash(String hash) throws HashcodeRegisteredException, EmptyObjectHashException {
-
-        /* Verifica se o ficheiro já não existe no sistema */
-        if (hashlist.contains(hash))
-            throw new HashcodeRegisteredException(hash);
-
-        /* Verifica se é um ficheiro não vazio */
+    private void setHash(String hash) throws EmptyObjectHashException {
         if (hash.equals(emptyhash))
             throw new EmptyObjectHashException(hash);
 
@@ -71,13 +55,6 @@ public abstract class FSFile {
             throw new EmptyFilenameException(name);
 
         this.name = name;
-    }
-
-    public void setExtension(String extension) throws EmptyFileExtensionException {
-        if (extension.equals(""))
-            throw new EmptyFileExtensionException(extension);
-
-        this.extension = extension;
     }
 
     public void setSize(long size) throws InvalidFileSizeException {
@@ -96,10 +73,6 @@ public abstract class FSFile {
         return this.name;
     }
 
-    public String getExtension(){
-        return this.extension;
-    }
-
     public long getSize(){
         return this.size;
     }
@@ -114,7 +87,7 @@ public abstract class FSFile {
             return false;
 
         FSFile file = (FSFile) o;
-        return this.hash.equals(file.hash) && this.name.equals(file.name) && this.extension.equals(file.extension) && this.size == file.size;
+        return this.hash.equals(file.hash) && this.name.equals(file.name) && this.size == file.size;
     }
 
     public abstract Object clone();
@@ -125,7 +98,6 @@ public abstract class FSFile {
 
         builder.append("(FSFile)hash:").append(this.hash).append(";");
         builder.append("name:").append(this.name).append(";");
-        builder.append("extension:").append(this.extension).append(";");
         builder.append("size:").append(this.size).append(";");
 
         return builder.toString();

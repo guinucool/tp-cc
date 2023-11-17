@@ -16,13 +16,13 @@ public class TrackerFile extends FSFile {
         this.blocks = new ArrayList<FSBlock>();
     }
 
-    public TrackerFile(String hash, String name, String extension, long size, Node node) throws FileException, BlockException {
+    public TrackerFile(String hash, String name, String extension, long size) throws FileException, BlockException {
         super(hash, name, extension, size);
         this.generateBlocksize();
         this.blocks = new ArrayList<>();
 
         for (int i = 0; i < this.getNumBlocks(); i++)
-            this.blocks.add(new FSBlock(i, node));
+            this.blocks.add(new FSBlock(i));
     }
 
     public TrackerFile(String hash, String name, String extension, long size, long blocksize, List<FSBlock> blocks) throws FileException {
@@ -127,12 +127,20 @@ public class TrackerFile extends FSFile {
 	    this.blocksize = blocksize / 2;
     }
 
-    public void addNodeToFile(Node node) throws NodeExistsBlockException {
+    public void addNode(Node node) throws NodeExistsBlockException {
         for (FSBlock block : this.blocks)
             block.addNode(node);
     }
 
-    public void addNodeToBlock(int offset, Node node) throws NodeExistsBlockException {
+    public void addNodeToBlock(int offset, Node node) throws NodeExistsBlockException, BlockOutOfRangeException {
+        if (offset >= this.blocks.size())
+            throw new BlockOutOfRangeException("" + offset);
+
         this.blocks.get(offset).addNode(node);
+    }
+
+    public void removeNode(Node node) {
+        for (FSBlock block : this.blocks)
+            block.removeNode(node);
     }
 }

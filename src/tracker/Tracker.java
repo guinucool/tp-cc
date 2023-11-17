@@ -1,110 +1,194 @@
 import java.util.*;
 import java.util.concurrent.locks.*;
 
+import filexcp.*;
+import trackexcp.*;
+
 public class Tracker {
+
+    private Map<String,TrackerFile> files;
     private Map<String,Node> nodes;
-    private Map<String,TrackerFile> files;  
+
+    /* Locks */
     private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private Lock reader = this.lock.readLock();
+    private Lock writer = this.lock.writeLock();
 
     /* Constructors */
-
     public Tracker() {
-        this.nodes = new HashMap<>();
         this.files = new HashMap<>();
-    }
-
-    public Tracker(Map<String, Node> nodes, Map<String, TrackerFile> files) {
-        this.setNodes(nodes);
-        this.setFiles(files);
-    }
-
-    public Tracker(Tracker tracker) {
-        this.setNodes(tracker.nodes);
-        this.setFiles(tracker.files);
+        this.nodes = new HashMap<>();
     }
 
     /* Setters */
-    public void setNodes(Map<String,Node> nodes){
-        this.nodes = new HashMap<String,Node>(nodes);
+    public void addNode(Node node) {
+        this.writer.lock();
+        this.nodes.put(node.getIp(),(Node) node.clone());
+        this.writer.unlock();
     }
 
-    public void setFiles(Map<String,TrackerFile> files){
-        this.files = new HashMap<String,TrackerFile>(files);
+    public void removeNode(String ip) throws NodeNotInTrackerException {
+
+        this.writer.lock();
+
+        try {
+            if (!this.nodes.containsKey(ip))
+                throw new NodeNotInTrackerException(ip);
+
+            Node node = this.nodes.remove(ip);
+
+            for (TrackerFile file : this.files.values())
+                file.removeNode(node);
+        } finally {
+            this.writer.unlock();
+        }
+    }
+
+    public void addFile(TrackerFile file) throws FilenameInTrackerException {
+        
+        this.writer.lock();
+
+        try {
+            if (this.hasRepeatedFile(file))
+                throw new FilenameInTrackerException(file.getName());
+
+            if (!this.files.containsKey(file.getName()))
+                this.files.put(file.getName(), (TrackerFile) file.clone());
+        } finally {
+            this.writer.unlock();
+        }
+    }
+
+    public void removeFile(String filename) throws FileNotInTrackerException {
+
+        this.writer.lock();
+
+        try {
+            if (!this.files.containsKey(filename))
+                throw new FileNotInTrackerException(filename);
+
+            this.files.remove(filename);
+        } finally {
+            this.writer.unlock();
+        }
     }
 
     /* Getters */
-    public Map<String, Node> getNodes(){
-        return this.nodes;
-    }
+    public List<Node> getNodes() {
+        this.reader.lock();
 
-    public Map<String,TrackerFile> getFiles(){
-        return this.files;
-    }
-
-    /* Métodos para manipular Nodes */
-    public void addNode(Node node) {
-        lock.writeLock().lock();
         try {
-            this.nodes.put(node.getIp(), node);
+            List<Node> nodelist = new ArrayList<>();
+
+            for (Node node : this.nodes.values())
+                nodelist.add((Node) node.clone());
+
+            return nodelist;
         } finally {
-            lock.writeLock().unlock();
+            this.reader.unlock();
         }
     }
 
-    public Node getNode(String ip) {
-        lock.readLock().lock();
-        try {
-            return this.nodes.get(ip);
+    public Node getNode(String ip) throws NodeNotInTrackerException {
+        this.reader.lock();
+
+        try {    
+            if (!this.nodes.containsKey(ip))
+                throw new NodeNotInTrackerException(ip);
+
+            return (Node) this.nodes.get(ip).clone();
         } finally {
-            lock.readLock().unlock();
+            this.reader.unlock();
         }
     }
 
-    public void removeNode(String ip) {
-        lock.writeLock().lock();
-        try {
-            this.nodes.remove(ip);
+    public List<TrackerFile> getFiles() {
+        this.reader.lock();
 
-            for (TrackerFile tf : files.values()) {
-                for (FSBlock fsBlock : tf.getBlocks()) {
-                    Iterator<Node> iterator = fsBlock.getNodes().iterator();
-                    while (iterator.hasNext()) {
-                        Node node = iterator.next();
-                        if (node.getIp().equals(ip))
-                            iterator.remove();
-                    }
-                }
-            }
+        try {
+            List<TrackerFile> filelist = new ArrayList<>();
+
+            for (TrackerFile file : this.files.values())
+                filelist.add((TrackerFile) file.clone());
+
+            return filelist;
         } finally {
-            lock.writeLock().unlock();
+            this.reader.unlock();
         }
     }
 
-    /* Métodos para manipular TrackerFiles */
-    public void addFile(TrackerFile trackerFile) {
-        lock.writeLock().lock();
+    public TrackerFile getFile(String filename) throws FileNotInTrackerException {
+        this.reader.lock();
+
         try {
-            this.files.put(trackerFile.getName(), trackerFile);
+            if(!this.files.containsKey(filename))
+                throw new FileNotInTrackerException(filename);
+
+            return (TrackerFile) this.files.get(filename).clone();
         } finally {
-            lock.writeLock().unlock();
+            this.reader.unlock();
         }
     }
 
-    public TrackerFile getTrackerFile(String filename) {
-        lock.readLock().lock();
+    /* Checkers */
+    private boolean hasRepeatedFile(TrackerFile file) {
+        TrackerFile tfile = this.files.get(file.getName());
+
+        if (tfile == null)
+            return false;
+
+        return !tfile.getHash().equals(file.getHash());
+    }
+
+    /* Auxiliar */
+    public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("(Tracker)files:").append(this.files.toString()).append(";");
+        builder.append("nodes:").append(this.nodes.toString()).append(";");
+        builder.append("lock:").append(this.lock.toString()).append(";");
+
+        return builder.toString();
+    }
+
+    public void addNodeToFile(String filename, String ip) throws FileNotInTrackerException, NodeNotInTrackerException, NodeExistsBlockException {
+
+        this.writer.lock();
+
         try {
-            return this.files.get(filename);
+            if (!this.files.containsKey(filename))
+                throw new FileNotInTrackerException(filename);
+
+            if (!this.nodes.containsKey(ip))
+                throw new NodeNotInTrackerException(ip);
+
+            TrackerFile file = this.files.get(filename);
+            Node node = this.nodes.get(ip);
+
+            file.addNode(node);
         } finally {
-            lock.readLock().unlock();
+            this.writer.unlock();
         }
     }
 
-    public void removeFile(String filename) {
-        lock.writeLock().lock();
+    public void addNodeToBlock(String filename, String ip, int offset) throws FileNotInTrackerException, NodeNotInTrackerException, NodeExistsBlockException, BlockOutOfRangeException {
+
+        this.writer.lock();
+
         try {
-            this.files.remove(filename);
+            if (!this.files.containsKey(filename))
+                throw new FileNotInTrackerException(filename);
+
+            if (!this.nodes.containsKey(ip))
+                throw new NodeNotInTrackerException(ip);
+
+            TrackerFile file = this.files.get(filename);
+            Node node = this.nodes.get(ip);
+
+            file.addNodeToBlock(offset, node);
         } finally {
-            lock.writeLock().unlock();
+            this.writer.unlock();
         }
     }
 }
