@@ -14,7 +14,7 @@ public class ServerSocketRunner extends SocketRunner {
     }
 
     /* Setters */
-    protected void setStream() throws IOException {
+    public void setStream() throws IOException {
         super.setReader();
         super.setWriter();
     }

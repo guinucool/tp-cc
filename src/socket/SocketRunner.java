@@ -31,16 +31,7 @@ public abstract class SocketRunner {
 
     /* Constructors */
     public SocketRunner(Socket socket) throws SocketRunnerException {
-
         this.setSocket(socket);
-
-        /* Tenta abrir o stream e fecha o socket em caso de falhanço */
-        try {
-            this.setStream();
-        } catch (IOException e) {
-            this.close();
-            throw new OneSocketSideClosedException(e.getMessage());
-        }
     }
 
     /* Setters */
@@ -62,7 +53,16 @@ public abstract class SocketRunner {
     /**
      * @brief Define a ordem de abertura correta para o streams de leitura e escrita.
      */
-    protected abstract void setStream() throws IOException;
+    public abstract void setStream() throws IOException;
+
+    /* Getters */
+    public String getSourceIP() {
+        return this.socket.getLocalAddress().getHostAddress();
+    }
+
+    public String getDestIP() {
+        return this.socket.getRemoteSocketAddress().toString().substring(1).split(":")[0];
+    }
 
     /* Auxiliar */
     public String toString() {

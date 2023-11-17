@@ -5,14 +5,13 @@ import java.net.*;
 
 import sockexcp.*;
 
-public class SocketWorker {
+public class SocketWorker implements Runnable {
     
     private SocketRunner runner;
-    private Socket socket;
 
     /* Constructors */
-    public SocketWorker(Socket socket) {
-        this.socket = socket;
+    public SocketWorker(SocketRunner runner) {
+        this.socket = runner;
     }
 
     /* Thread */

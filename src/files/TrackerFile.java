@@ -92,28 +92,6 @@ public class TrackerFile extends FSFile {
     }
 
     /* Auxiliar */
-    private void generateBlocksize() {
-
-        long blocksize = 1;
-	    long num = Long.MAX_VALUE;
-
-	    while(num > MAX_BLOCK) {
-	        num = this.getSize() / blocksize;
-            blocksize *= 2;
-	    }
-
-	    this.blocksize = blocksize / 2;
-    }
-
-    public void addNodeToFile(Node node) throws NodeExistsBlockException {
-        for (FSBlock block : this.blocks)
-            block.addNode(node);
-    }
-
-    public void addNodeToBlock(int offset, Node node) throws NodeExistsBlockException {
-        this.blocks.get(offset).addNode(node);
-    }
-
     public boolean equals(Object o) {
 
         TrackerFile file = (TrackerFile) o;
@@ -134,5 +112,27 @@ public class TrackerFile extends FSFile {
         builder.append(super.toString());
 
         return builder.toString();
+    }
+
+    private void generateBlocksize() {
+
+        long blocksize = 1;
+	    long num = Long.MAX_VALUE;
+
+	    while(num > MAX_BLOCK) {
+	        num = this.getSize() / blocksize;
+            blocksize *= 2;
+	    }
+
+	    this.blocksize = blocksize / 2;
+    }
+
+    public void addNodeToFile(Node node) throws NodeExistsBlockException {
+        for (FSBlock block : this.blocks)
+            block.addNode(node);
+    }
+
+    public void addNodeToBlock(int offset, Node node) throws NodeExistsBlockException {
+        this.blocks.get(offset).addNode(node);
     }
 }
