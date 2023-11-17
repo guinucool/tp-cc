@@ -5,7 +5,7 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
 
-import sockexcp.*;
+import socket.*;
 import thread.*;
 
 /**
@@ -43,7 +43,7 @@ public class Server {
     }
 
     /* Getters */
-    public String getIp() {
+    public String getIp() throws SocketException {
         String ip = "localhost";
         
         Enumeration<NetworkInterface> networkInterfaceEnumeration = NetworkInterface.getNetworkInterfaces();
@@ -59,6 +59,18 @@ public class Server {
 
     public int getPort() {
         return this.listener.getLocalPort();
+    }
+
+    /* Checkers */
+    public boolean isClosed() {
+
+        this.lock.lock();
+        
+        try {
+            return this.listener.isClosed();
+        } finally {
+            this.lock.unlock();
+        }
     }
 
     /* Auxiliar */
@@ -79,7 +91,7 @@ public class Server {
 
         this.lock.lock();
         try {
-            SocketRunner runner = new SocketRunner(client);
+            SocketRunner runner = new ServerSocketRunner(client);
             Thread worker = new Thread(new SocketWorker(runner));
             worker.start();
 

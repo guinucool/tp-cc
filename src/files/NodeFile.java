@@ -1,4 +1,7 @@
-import filexcp.*;
+package files;
+
+import java.io.*;
+import java.security.*;
 
 /**
  * Objeto que regista um ficheiro que um cliente possui na visão do próprio.
@@ -7,6 +10,8 @@ import filexcp.*;
  *      Verifica se o ficheiro do cliente já foi enviado (com sucesso) para o servidor.
  */
 public class NodeFile extends FSFile {
+
+    private static final int HASH_OFFSET = 1024;
     
     private boolean sent;
 
@@ -16,8 +21,8 @@ public class NodeFile extends FSFile {
         this.sent = false;
     }
 
-    public NodeFile(String hash, String name, String extension, long size) throws FileException {
-        super(hash, name, extension, size);
+    public NodeFile(File file) throws FileException {
+        super(filehash(file), file.getName(), file.length());
         this.sent = false;
     }
 
@@ -56,5 +61,34 @@ public class NodeFile extends FSFile {
         builder.append(super.toString());
 
         return builder.toString();
+    }
+
+    public static String filehash(File file) {
+
+        String hash = getEmptyHash();
+
+        try {
+            MessageDigest digestor = MessageDigest.getInstance("MD5");
+            FileInputStream reader = new FileInputStream(file);
+
+            byte[] bytes = new byte[HASH_OFFSET];
+
+            while (reader.read(bytes) != -1)
+                digestor.update(bytes);
+
+            reader.close();
+
+            byte[] dbytes = digestor.digest();
+            StringBuilder sb = new StringBuilder();
+
+            for (byte b : dbytes)
+                sb.append(String.format("%02x", b & 0xff));
+
+            hash = sb.toString();
+        } catch (NoSuchAlgorithmException | IOException e) {
+            /* Não é preciso tratar a exceção */
+        }
+
+        return hash;
     }
 }

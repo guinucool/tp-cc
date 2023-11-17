@@ -1,6 +1,6 @@
-import java.util.*;
+package tracker;
 
-import nodexcp.*;
+import java.util.*;
 
 /**
  * Objeto que regista um node que possui ligação com o servidor.
@@ -35,19 +35,19 @@ public class Node {
     }
 
     /* Setters */
-    private void setIp(String ip) throws NodeRegisteredException, EmptyNodeIpException {
+    private void setIp(String ip) throws NodeException.NodeRegisteredException, NodeException.EmptyNodeIpException {
         if (iplist.contains(ip))
-            throw new NodeRegisteredException(ip);
+            throw new NodeException.NodeRegisteredException(ip);
 
         if (ip.equals(""))
-            throw new EmptyNodeIpException(ip);
+            throw new NodeException.EmptyNodeIpException(ip);
 
         this.ip = ip;
     }
 
-    public void setPort(int port) throws InvalidNodePortException {
+    public void setPort(int port) throws NodeException.InvalidNodePortException {
         if (port < 0 || port > 65535)
-            throw new InvalidNodePortException("" + port);
+            throw new NodeException.InvalidNodePortException("" + port);
 
         this.port = port;
     }

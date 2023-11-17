@@ -1,9 +1,10 @@
+package socket;
+
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.locks.*;
 
 import message.*;
-import sockexcp.*;
 
 /**
  * Objeto que segura um socket tcp e executa operações bem definidas no mesmo.
@@ -35,9 +36,9 @@ public abstract class SocketRunner {
     }
 
     /* Setters */
-    private void setSocket(Socket socket) throws ClosedRegisterSocketException {
+    private void setSocket(Socket socket) throws SocketRunnerException.ClosedRegisterSocketException {
         if (socket.isClosed())
-            throw new ClosedRegisterSocketException(socket.toString());
+            throw new SocketRunnerException.ClosedRegisterSocketException(socket.toString());
 
         this.socket = socket;
     }

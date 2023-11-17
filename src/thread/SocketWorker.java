@@ -3,7 +3,7 @@ package thread;
 import java.io.*;
 import java.net.*;
 
-import sockexcp.*;
+import socket.*;
 
 public class SocketWorker implements Runnable {
     
@@ -11,7 +11,7 @@ public class SocketWorker implements Runnable {
 
     /* Constructors */
     public SocketWorker(SocketRunner runner) {
-        this.socket = runner;
+        this.runner = runner;
     }
 
     /* Thread */

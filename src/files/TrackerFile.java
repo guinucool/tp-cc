@@ -1,6 +1,8 @@
+package files;
+
 import java.util.*;
 
-import filexcp.*;
+import tracker.*;
 
 /**
  * Objeto que define um ficheiro na visão do tracker.
@@ -28,8 +30,8 @@ public class TrackerFile extends FSFile {
         this.blocks = new ArrayList<FSBlock>();
     }
 
-    public TrackerFile(String hash, String name, String extension, long size) throws FileException, BlockException {
-        super(hash, name, extension, size);
+    public TrackerFile(String hash, String name, long size) throws FileException, BlockException {
+        super(hash, name, size);
         this.generateBlocksize();
         this.blocks = new ArrayList<>();
 
@@ -37,8 +39,8 @@ public class TrackerFile extends FSFile {
             this.blocks.add(new FSBlock(i));
     }
 
-    public TrackerFile(String hash, String name, String extension, long size, long blocksize, List<FSBlock> blocks) throws FileException {
-        super(hash, name, extension, size);
+    public TrackerFile(String hash, String name, long size, long blocksize, List<FSBlock> blocks) throws FileException {
+        super(hash, name, size);
         this.setBlocksize(blocksize);
         this.setBlocks(blocks);
     }
@@ -50,17 +52,17 @@ public class TrackerFile extends FSFile {
     }
 
     /* Setters */
-    private void setBlocksize(long blocksize) throws InvalidBlocksizeException {
+    private void setBlocksize(long blocksize) throws FileException.InvalidBlocksizeException {
         if (blocksize < 1)
-            throw new InvalidBlocksizeException("" + blocksize);
+            throw new FileException.InvalidBlocksizeException("" + blocksize);
 
         this.blocksize = blocksize;
     }
 
-    private void setBlocks(List<FSBlock> blocks) throws InvalidBlocksException {
+    private void setBlocks(List<FSBlock> blocks) throws FileException.InvalidBlocksException {
 
         if (this.getNumBlocks() != blocks.size())
-            throw new InvalidBlocksException(this.blocks.toString());
+            throw new FileException.InvalidBlocksException(this.blocks.toString());
 
         this.blocks = new ArrayList<FSBlock>();
 
@@ -139,14 +141,14 @@ public class TrackerFile extends FSFile {
 	    this.blocksize = blocksize / 2;
     }
 
-    public void addNode(Node node) throws NodeExistsBlockException {
+    public void addNode(Node node) throws BlockException.NodeExistsBlockException {
         for (FSBlock block : this.blocks)
             block.addNode(node);
     }
 
-    public void addNodeToBlock(int offset, Node node) throws NodeExistsBlockException, BlockOutOfRangeException {
+    public void addNodeToBlock(int offset, Node node) throws BlockException.NodeExistsBlockException, FileException.BlockOutOfRangeException {
         if (offset >= this.blocks.size())
-            throw new BlockOutOfRangeException("" + offset);
+            throw new FileException.BlockOutOfRangeException("" + offset);
 
         this.blocks.get(offset).addNode(node);
     }

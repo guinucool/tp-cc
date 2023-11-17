@@ -1,6 +1,8 @@
+package files;
+
 import java.util.*;
 
-import filexcp.*;
+import tracker.*;
 
 /**
  * Objeto que regista um bloco de um ficheiro do sistema.
@@ -33,16 +35,16 @@ public class FSBlock {
     }
 
     /* Setters */
-    public void setOffset(int offset) throws InvalidBlockOffsetException {
+    public void setOffset(int offset) throws BlockException.InvalidBlockOffsetException {
         if (offset < 0)
-            throw new InvalidBlockOffsetException("" + offset);
+            throw new BlockException.InvalidBlockOffsetException("" + offset);
 
         this.offset = offset;
     }
 
-    public void addNode(Node node) throws NodeExistsBlockException {
+    public void addNode(Node node) throws BlockException.NodeExistsBlockException {
         if (this.nodes.contains(node))
-            throw new NodeExistsBlockException(node.toString());
+            throw new BlockException.NodeExistsBlockException(node.toString());
 
         this.nodes.add(node);
     }

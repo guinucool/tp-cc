@@ -1,7 +1,7 @@
+package socket;
+
 import java.io.*;
 import java.net.*;
-
-import sockexcp.*;
 
 /**
  * Objeto que define como devem ser inicializadas as streams do socket no server side.

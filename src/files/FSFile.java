@@ -1,4 +1,4 @@
-import filexcp.*;
+package files;
 
 /**
  * Objeto que regista, na generalidade dos casos, um ficheiro do sistema.
@@ -17,7 +17,7 @@ import filexcp.*;
  */
 public abstract class FSFile {
 
-    private static final String emptyhash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    private static final String EMPTY_MD5 = "d41d8cd98f00b204e9800998ecf8427e";
 
     private String hash;
     private String name;
@@ -25,12 +25,12 @@ public abstract class FSFile {
     
     /* Constructors */
     public FSFile() {
-        this.hash = emptyhash;
+        this.hash = EMPTY_MD5;
         this.name = "";
         this.size = 0;
     }
 
-    public FSFile (String hash, String name, String extension, long size) throws FileException {
+    public FSFile (String hash, String name, long size) throws FileException {
         this.setHash(hash);
         this.setName(name);
         this.setSize(size);
@@ -43,23 +43,23 @@ public abstract class FSFile {
     }
 
     /* Setters */
-    private void setHash(String hash) throws EmptyObjectHashException {
-        if (hash.equals(emptyhash))
-            throw new EmptyObjectHashException(hash);
+    private void setHash(String hash) throws FileException.EmptyObjectHashException {
+        if (hash.equals(EMPTY_MD5))
+            throw new FileException.EmptyObjectHashException(hash);
 
         this.hash = hash;
     }
 
-    public void setName(String name) throws EmptyFilenameException {
+    public void setName(String name) throws FileException.EmptyFilenameException {
         if (name.equals(""))
-            throw new EmptyFilenameException(name);
+            throw new FileException.EmptyFilenameException(name);
 
         this.name = name;
     }
 
-    public void setSize(long size) throws InvalidFileSizeException {
+    public void setSize(long size) throws FileException.InvalidFileSizeException {
         if (size <= 0)
-            throw new InvalidFileSizeException("" + size);
+            throw new FileException.InvalidFileSizeException("" + size);
 
         this.size = size;
     }
@@ -75,6 +75,10 @@ public abstract class FSFile {
 
     public long getSize(){
         return this.size;
+    }
+
+    public static String getEmptyHash() {
+        return EMPTY_MD5;
     }
 
     /* Auxiliar */
