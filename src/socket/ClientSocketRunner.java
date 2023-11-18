@@ -1,7 +1,6 @@
 package socket;
 
-import java.io.*;
-import java.net.*;
+import java.net.Socket;
 
 /**
  * Objeto que define como devem ser inicializadas as streams do socket no client side.
@@ -14,7 +13,7 @@ public class ClientSocketRunner extends SocketRunner {
     }
 
     /* Setters */
-    protected void setStream() throws IOException {
+    public void setStream() throws RunnerException {
         super.setWriter();
         super.setReader();
     }

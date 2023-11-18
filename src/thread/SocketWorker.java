@@ -18,10 +18,8 @@ public class SocketWorker implements Runnable {
     private TrackerView view;
 
     /* Constructors */
-    public SocketWorker(SocketRunner runner, Tracker tracker) {
+    public SocketWorker(SocketRunner runner) {
         this.runner = runner;
-        this.control = new TrackerControl(tracker);
-        this.view = new TrackerView(tracker);
     }
 
     /* Thread */

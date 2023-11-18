@@ -1,10 +1,15 @@
 package socket;
 
-import java.io.*;
-import java.net.*;
-import java.util.concurrent.locks.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.BufferedInputStream;
 
-import message.*;
+import java.net.Socket;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import message.TrackMessage;
 
 /**
  * Objeto que segura um socket tcp e executa operações bem definidas no mesmo.
@@ -33,13 +38,6 @@ public abstract class SocketRunner {
     /* Constructors */
     public SocketRunner(Socket socket) throws RunnerException {
         this.setSocket(socket);
-
-        try {
-            this.setStream();
-        } catch (IOException e) {
-            this.close();
-            throw new RunnerException("socket lost connection");
-        }
     }
 
     /* Setters */
@@ -50,18 +48,28 @@ public abstract class SocketRunner {
         this.socket = socket;
     }
 
-    protected void setReader() throws IOException {
-        this.reader = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
+    protected void setReader() throws RunnerException {
+        try {
+            this.reader = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
+        } catch (IOException e) {
+            this.close();
+            throw new RunnerException("socket lost connection");
+        }
     }
 
-    protected void setWriter() throws IOException {
-        this.writer = new DataOutputStream(this.socket.getOutputStream());
+    protected void setWriter() throws RunnerException {
+        try {    
+            this.writer = new DataOutputStream(this.socket.getOutputStream());
+        } catch (IOException e) {
+            this.close();
+            throw new RunnerException("socket lost connection");
+        }
     }
 
     /**
      * @brief Define a ordem de abertura correta para o streams de leitura e escrita.
      */
-    protected abstract void setStream() throws IOException;
+    public abstract void setStream() throws RunnerException;
 
     /* Getters */
     public String getSourceIP() {
@@ -137,7 +145,7 @@ public abstract class SocketRunner {
 
         /* Fecha o socket */
         try {
-            this.socket.close();
+            if (!this.socket.isClosed()) this.socket.close();
         } catch (IOException e) {
             /* Não é necessário tratar esta exceção */
         } finally {

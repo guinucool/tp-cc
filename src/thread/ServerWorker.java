@@ -1,9 +1,8 @@
 package thread;
 
-import java.io.*;
-
-import server.*;
-import socket.*;
+import server.Server;
+import server.ServerException;
+import socket.RunnerException;
 
 public class ServerWorker implements Runnable {
     
@@ -16,12 +15,14 @@ public class ServerWorker implements Runnable {
 
     /* Thread */
     public void run() {
-        while (!this.server.isClosed()) {
 
+        while (!this.server.isClosed()) {
             try {
                 this.server.listen();
-            } catch (SocketRunnerException | IOException e) {
-                /* Não é necessário tratar as exceções */
+            } catch (ServerException e) {
+                System.out.println("Incoming connection refused! Server ran out of resources.");
+            } catch (RunnerException e) {
+                System.out.println("Incoming request failed to connect!");
             }
         }
     }

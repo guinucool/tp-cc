@@ -1,13 +1,22 @@
 package server;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.locks.*;
+import java.io.IOException;
+import java.net.NetworkInterface;
+import java.net.InterfaceAddress;
+import java.net.SocketException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-import socket.*;
-import thread.*;
-import tracker.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import socket.SocketRunner;
+import socket.ServerSocketRunner;
+import socket.RunnerException;
+import thread.SocketWorker;
 
 /**
  * Objeto que define o servidor.
@@ -23,7 +32,6 @@ import tracker.*;
  */
 public class Server {
     
-    private Tracker tracker;
     private ServerSocket listener;
     private List<SocketRunner> runners;
     private List<Thread> threads;
@@ -32,33 +40,46 @@ public class Server {
     private Lock lock = new ReentrantLock();
 
     /* Constructors */
-    public Server() throws IOException {
-        this.tracker = new Tracker();
-        this.listener = new ServerSocket(9090);
-        this.runners = new ArrayList<>();
-        this.threads = new ArrayList<>();
+    public Server() throws ServerException {
+
+        try {
+            this.listener = new ServerSocket(9090);
+            this.runners = new ArrayList<>();
+            this.threads = new ArrayList<>();
+        } catch (IOException e) {
+            throw new ServerException("server failed to start");
+        }
     }
 
-    public Server(int port) throws IOException {
-        this.tracker = new Tracker();
-        this.listener = new ServerSocket(port);
-        this.runners = new ArrayList<>();
-        this.threads = new ArrayList<>();
+    public Server(int port) throws ServerException {
+
+        try {
+            this.listener = new ServerSocket(port);
+            this.runners = new ArrayList<>();
+            this.threads = new ArrayList<>();
+        } catch (IOException e) {
+            throw new ServerException("server failed to start");
+        }
     }
 
     /* Getters */
-    public String getIp() throws SocketException {
-        String ip = "localhost";
+    public String getIp() throws ServerException {
+
+        try {
+            String ip = "";
+            Enumeration<NetworkInterface> networkInterfaceEnumeration = NetworkInterface.getNetworkInterfaces();
+
+            while( networkInterfaceEnumeration.hasMoreElements()) {
+                for ( InterfaceAddress interfaceAddress : networkInterfaceEnumeration.nextElement().getInterfaceAddresses())
+                    if ( interfaceAddress.getAddress().isSiteLocalAddress())
+                        ip = interfaceAddress.getAddress().getHostAddress();
+            }
+
+            return ip;
         
-        Enumeration<NetworkInterface> networkInterfaceEnumeration = NetworkInterface.getNetworkInterfaces();
-
-        while( networkInterfaceEnumeration.hasMoreElements()) {
-            for ( InterfaceAddress interfaceAddress : networkInterfaceEnumeration.nextElement().getInterfaceAddresses())
-                if ( interfaceAddress.getAddress().isSiteLocalAddress())
-                    ip = interfaceAddress.getAddress().getHostAddress();
+        } catch (SocketException e) {
+            throw new ServerException("server not connected to a network");
         }
-
-        return ip;
     }
 
     public int getPort() {
@@ -89,20 +110,26 @@ public class Server {
         return builder.toString();
     }
 
-    public void listen() throws IOException, SocketRunnerException {
+    public void listen() throws ServerException, RunnerException {
 
-        Socket client = this.listener.accept();
-
-        this.lock.lock();
         try {
-            SocketRunner runner = new ServerSocketRunner(client);
-            Thread worker = new Thread(new SocketWorker(runner, this.tracker));
-            worker.start();
+            Socket client = this.listener.accept();
 
-            this.runners.add(runner);
-            this.threads.add(worker);
-        } finally {
-            this.lock.unlock();
+            this.lock.lock();
+            try {
+                SocketRunner runner = new ServerSocketRunner(client);
+                Thread worker = new Thread(new SocketWorker(runner));
+                worker.start();
+
+                this.runners.add(runner);
+                this.threads.add(worker);
+            } finally {
+                this.lock.unlock();
+            }
+
+        } catch (IOException e) {
+            if (!this.isClosed())
+                throw new ServerException("server ran out of resources");
         }
     }
 
@@ -111,15 +138,13 @@ public class Server {
         this.lock.lock();
 
         try {
-            this.listener.close();
+            if (!this.listener.isClosed()) this.listener.close();
         } catch (IOException e) {
             /* Não é necessário tratar esta exceção */
         }
 
-        for (SocketRunner runner : this.runners) {
-            if (!runner.isClosed())
-                runner.close();
-        }
+        for (SocketRunner runner : this.runners)
+            runner.close();
 
         for (Thread worker : this.threads) {
             try {
