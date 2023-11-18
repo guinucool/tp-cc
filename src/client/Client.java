@@ -99,16 +99,13 @@ public class Client {
         }
     }
 
-    public void disconnect() {
-
-    }
-
-    public static void main(String[] args) throws PathException, SocketRunnerException, UnknownHostException, IOException {
-
-        Client client = new Client("./test", "10.0.2.15", 9090);
-
-        for (NodeFile file : client.getFiles()) {
-            System.out.println(file.toString());
+    public void disconnect() throws ClientException {
+        try {
+            this.control.sendDisconnect();
+        } catch (IOException | SocketControlException e) {
+            throw new ClientException.ClientRejectedConnectionException(e.getMessage());
+        } finally {
+            this.control.close();
         }
     }
 }

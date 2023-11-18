@@ -41,12 +41,19 @@ public class SocketControl {
         if (res.getCode() == 202 && res.getType() == TrackMessage.Type.RESPONSE)
             throw new SocketControlException.FileRefusedException(res.getArguments().get(0));
 
-        if (res.getCode() != 0 && res.getType() == TrackMessage.Type.REQUEST)
+        if (res.getCode() != 0 || res.getType() != TrackMessage.Type.RESPONSE)
             throw new SocketControlException.RunnerCloseConnectionException("" + res.getCode());
     }
 
-    public void sendDisconnect() {
+    public void sendDisconnect() throws IOException, SocketControlException {
 
+        TrackMessage msg = new TrackMessage(TrackMessage.Type.REQUEST, 101, Arrays.asList());
+        this.runner.sendMessage(msg);
+
+        TrackMessage res = this.runner.listenMessage();
+
+        if (res.getCode() != 0 || res.getType() != TrackMessage.Type.RESPONSE)
+            throw new SocketControlException.RunnerCloseConnectionException("" + res.getCode());
     }
 
     public void close() {

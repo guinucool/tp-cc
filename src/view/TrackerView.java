@@ -1,7 +1,7 @@
 package view;
 
+import message.*;
 import tracker.*;
-import tracker.TrackerException.FileNotInTrackerException;
 
 public class TrackerView {
 
@@ -13,11 +13,7 @@ public class TrackerView {
     }
 
     /* View */
-    public String getFile(String filename) throws FileNotInTrackerException {
-        return this.tracker.getFile(filename).toString();
-    }
-
-    public String getFiles() {
-        return this.tracker.getFiles().toString();
+    public TrackMessage getFile(String filename) throws TrackerException {
+        return this.tracker.getFile(filename).toMessage();
     }
 }
