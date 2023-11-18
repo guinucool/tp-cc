@@ -18,6 +18,6 @@ public class ClientControl {
     }
 
     public void updateFiles() throws ClientException {
-        
+        this.client.
     }
 }
