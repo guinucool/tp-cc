@@ -9,12 +9,12 @@ import java.net.*;
 public class ClientSocketRunner extends SocketRunner {
     
     /* Constructors */
-    public ClientSocketRunner(Socket socket) throws SocketRunnerException, IOException {
+    public ClientSocketRunner(Socket socket) throws RunnerException {
         super(socket);
     }
 
     /* Setters */
-    public void setStream() throws IOException {
+    protected void setStream() throws IOException {
         super.setWriter();
         super.setReader();
     }

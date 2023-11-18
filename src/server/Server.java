@@ -7,6 +7,7 @@ import java.util.concurrent.locks.*;
 
 import socket.*;
 import thread.*;
+import tracker.*;
 
 /**
  * Objeto que define o servidor.
@@ -22,6 +23,7 @@ import thread.*;
  */
 public class Server {
     
+    private Tracker tracker;
     private ServerSocket listener;
     private List<SocketRunner> runners;
     private List<Thread> threads;
@@ -31,12 +33,14 @@ public class Server {
 
     /* Constructors */
     public Server() throws IOException {
+        this.tracker = new Tracker();
         this.listener = new ServerSocket(9090);
         this.runners = new ArrayList<>();
         this.threads = new ArrayList<>();
     }
 
     public Server(int port) throws IOException {
+        this.tracker = new Tracker();
         this.listener = new ServerSocket(port);
         this.runners = new ArrayList<>();
         this.threads = new ArrayList<>();
@@ -92,7 +96,7 @@ public class Server {
         this.lock.lock();
         try {
             SocketRunner runner = new ServerSocketRunner(client);
-            Thread worker = new Thread(new SocketWorker(runner));
+            Thread worker = new Thread(new SocketWorker(runner, this.tracker));
             worker.start();
 
             this.runners.add(runner);

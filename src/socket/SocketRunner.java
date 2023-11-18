@@ -31,14 +31,21 @@ public abstract class SocketRunner {
     private Lock lock = new ReentrantLock();
 
     /* Constructors */
-    public SocketRunner(Socket socket) throws SocketRunnerException {
+    public SocketRunner(Socket socket) throws RunnerException {
         this.setSocket(socket);
+
+        try {
+            this.setStream();
+        } catch (IOException e) {
+            this.close();
+            throw new RunnerException("socket lost connection");
+        }
     }
 
     /* Setters */
-    private void setSocket(Socket socket) throws SocketRunnerException.ClosedRegisterSocketException {
+    private void setSocket(Socket socket) throws RunnerException {
         if (socket.isClosed())
-            throw new SocketRunnerException.ClosedRegisterSocketException(socket.toString());
+            throw new RunnerException("one-side closed");
 
         this.socket = socket;
     }
@@ -54,7 +61,7 @@ public abstract class SocketRunner {
     /**
      * @brief Define a ordem de abertura correta para o streams de leitura e escrita.
      */
-    public abstract void setStream() throws IOException;
+    protected abstract void setStream() throws IOException;
 
     /* Getters */
     public String getSourceIP() {
@@ -86,21 +93,27 @@ public abstract class SocketRunner {
         return builder.toString();
     }
 
-    public TrackMessage listenMessage() throws IOException {
+    public TrackMessage listenMessage() throws RunnerException {
 
-        /* Bloqueia a espera de uma nova mensagem */
-        this.reader.readBoolean();
-
-        /* Bloqueia e lê a mensagem */
-        this.lock.lock();
         try {
-            return TrackMessage.deserialize(this.reader);
-        } finally {
-            this.lock.unlock();
+
+            /* Bloqueia a espera de uma nova mensagem */
+            this.reader.readBoolean();
+
+            /* Bloqueia e lê a mensagem */
+            this.lock.lock();
+            try {
+                return TrackMessage.deserialize(this.reader);
+            } finally {
+                this.lock.unlock();
+            }
+        } catch (IOException e) {
+            this.close();
+            throw new RunnerException("socket lost connection");
         }
     }
 
-    public void sendMessage(TrackMessage msg) throws IOException {
+    public void sendMessage(TrackMessage msg) throws RunnerException {
 
         /* Bloqueia */
         this.lock.lock();
@@ -109,6 +122,9 @@ public abstract class SocketRunner {
         try {
             this.writer.writeBoolean(true);
             msg.serialize(this.writer);
+        } catch(IOException e) {
+            this.close();
+            throw new RunnerException("socket lost connection");
         } finally {
             this.lock.unlock();
         }
