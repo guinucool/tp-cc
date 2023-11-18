@@ -42,7 +42,7 @@ public class Directory {
         File dir = new File(path);
 
         if(!dir.isDirectory())
-            throw new PathException("invalid path given");
+            throw new PathException("path-invalid");
 
         this.directory = dir;
     }
@@ -94,7 +94,7 @@ public class Directory {
 
     public void sendFile(String hash) throws PathException {
         if (!this.files.containsKey(hash))
-            throw new PathException("file is not in path");
+            throw new PathException("file-undefined");
 
         this.files.get(hash).send();
     }

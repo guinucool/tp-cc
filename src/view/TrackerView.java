@@ -1,6 +1,8 @@
 package view;
 
 import message.*;
+import model.tracker.Tracker;
+import model.tracker.TrackerException;
 import tracker.*;
 
 public class TrackerView {

@@ -38,14 +38,14 @@ public class FSBlock {
     /* Setters */
     private void setOffset(int offset) throws BlockException {
         if (offset < 0)
-            throw new BlockException("invalid offset parameter");
+            throw new BlockException("offset-invalid");
 
         this.offset = offset;
     }
 
     public void addNode(Node node) throws BlockException {
         if (this.nodes.contains(node))
-            throw new BlockException("node already exists");
+            throw new BlockException("node-defined");
 
         this.nodes.add(node);
     }

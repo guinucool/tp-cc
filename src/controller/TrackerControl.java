@@ -8,6 +8,8 @@ import model.file.TrackerFile;
 import model.file.block.BlockException;
 import model.node.Node;
 import model.node.NodeException;
+import model.tracker.Tracker;
+import model.tracker.TrackerException;
 import tracker.*;
 
 public class TrackerControl {

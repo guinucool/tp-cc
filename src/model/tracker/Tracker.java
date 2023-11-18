@@ -1,16 +1,25 @@
-package tracker;
+package model.tracker;
 
-import java.util.*;
-import java.util.concurrent.locks.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
 
-import files.*;
 import model.file.FileException;
 import model.file.TrackerFile;
 import model.file.block.BlockException;
 import model.node.Node;
+import model.tracker.TrackerException.FileNotInTrackerException;
+import model.tracker.TrackerException.FilenameInTrackerException;
 
 /**
  * Objeto que define como o tracker funciona e armazena informação.
+ * 
+ * @param tracker
+ *      Singleton que define o tracker de um servidor.
  * 
  * @param files
  *      Os ficheiros que existem no sistema.
@@ -19,6 +28,8 @@ import model.node.Node;
  *      Os nodes que estão ligados ao servidor.
  */
 public class Tracker {
+
+    private static Tracker tracker;
 
     private Map<String,TrackerFile> files;
     private Map<String,Node> nodes;
@@ -29,25 +40,40 @@ public class Tracker {
     private Lock writer = this.lock.writeLock();
 
     /* Constructors */
-    public Tracker() {
+    private Tracker() {
         this.files = new HashMap<>();
         this.nodes = new HashMap<>();
     }
 
-    /* Setters */
-    public void addNode(Node node) {
-        this.writer.lock();
-        this.nodes.put(node.getIp(),(Node) node.clone());
-        this.writer.unlock();
+    public static Tracker getInstance() {
+        if (tracker == null)
+            tracker = new Tracker();
+
+        return tracker;
     }
 
-    public void removeNode(String ip) throws TrackerException.NodeNotInTrackerException {
+    /* Setters */
+    public void addNode(Node node) throws TrackerException {
+
+        this.writer.lock();
+
+        try {
+            if (this.nodes.containsKey(node.getIp()))
+                throw new TrackerException("node-defined");
+
+            this.nodes.put(node.getIp(),(Node) node.clone());
+        } finally {
+            this.writer.unlock();
+        }
+    }
+
+    public void removeNode(String ip) throws TrackerException {
 
         this.writer.lock();
 
         try {
             if (!this.nodes.containsKey(ip))
-                throw new TrackerException.NodeNotInTrackerException(ip);
+                throw new TrackerException("node-undefined");
 
             Node node = this.nodes.remove(ip);
 
@@ -58,13 +84,13 @@ public class Tracker {
         }
     }
 
-    public void addFile(TrackerFile file) throws TrackerException.FilenameInTrackerException {
+    public void addFile(TrackerFile file) throws FilenameInTrackerException {
         
         this.writer.lock();
 
         try {
             if (this.hasRepeatedFile(file))
-                throw new TrackerException.FilenameInTrackerException(file.getName());
+                throw new FilenameInTrackerException(file.getName());
 
             if (!this.files.containsKey(file.getName()))
                 this.files.put(file.getName(), (TrackerFile) file.clone());
@@ -73,13 +99,13 @@ public class Tracker {
         }
     }
 
-    public void removeFile(String filename) throws TrackerException.FileNotInTrackerException {
+    public void removeFile(String filename) throws TrackerException {
 
         this.writer.lock();
 
         try {
             if (!this.files.containsKey(filename))
-                throw new TrackerException.FileNotInTrackerException(filename);
+                throw new TrackerException("file-undefined");
 
             this.files.remove(filename);
         } finally {
@@ -103,12 +129,12 @@ public class Tracker {
         }
     }
 
-    public Node getNode(String ip) throws TrackerException.NodeNotInTrackerException {
+    public Node getNode(String ip) throws TrackerException {
         this.reader.lock();
 
         try {    
             if (!this.nodes.containsKey(ip))
-                throw new TrackerException.NodeNotInTrackerException(ip);
+                throw new TrackerException("node-undefined");
 
             return (Node) this.nodes.get(ip).clone();
         } finally {
@@ -131,12 +157,12 @@ public class Tracker {
         }
     }
 
-    public TrackerFile getFile(String filename) throws TrackerException.FileNotInTrackerException {
+    public TrackerFile getFile(String filename) throws FileNotInTrackerException {
         this.reader.lock();
 
         try {
             if(!this.files.containsKey(filename))
-                throw new TrackerException.FileNotInTrackerException(filename);
+                throw new FileNotInTrackerException(filename);
 
             return (TrackerFile) this.files.get(filename).clone();
         } finally {
@@ -166,16 +192,16 @@ public class Tracker {
         return builder.toString();
     }
 
-    public void addNodeToFile(String filename, String ip) throws TrackerException.FileNotInTrackerException, TrackerException.NodeNotInTrackerException, BlockException.NodeExistsBlockException {
+    public void addNodeToFile(String filename, String ip) throws TrackerException, BlockException {
 
         this.writer.lock();
 
         try {
             if (!this.files.containsKey(filename))
-                throw new TrackerException.FileNotInTrackerException(filename);
+                throw new TrackerException("file-undefined");
 
             if (!this.nodes.containsKey(ip))
-                throw new TrackerException.NodeNotInTrackerException(ip);
+                throw new TrackerException("node-undefined");
 
             TrackerFile file = this.files.get(filename);
             Node node = this.nodes.get(ip);
@@ -186,16 +212,16 @@ public class Tracker {
         }
     }
 
-    public void addNodeToBlock(String filename, String ip, int offset) throws TrackerException.FileNotInTrackerException, TrackerException.NodeNotInTrackerException, BlockException.NodeExistsBlockException, FileException.BlockOutOfRangeException {
+    public void addNodeToBlock(String filename, String ip, int offset) throws TrackerException, BlockException, FileException {
 
         this.writer.lock();
 
         try {
             if (!this.files.containsKey(filename))
-                throw new TrackerException.FileNotInTrackerException(filename);
+                throw new TrackerException("file-undefined");
 
             if (!this.nodes.containsKey(ip))
-                throw new TrackerException.NodeNotInTrackerException(ip);
+                throw new TrackerException("node-undefined");
 
             TrackerFile file = this.files.get(filename);
             Node node = this.nodes.get(ip);

@@ -33,14 +33,14 @@ public class Node {
     /* Setters */
     private void setIp(String ip) throws NodeException {
         if (ip.equals(""))
-            throw new NodeException("invalid ip parameter");
+            throw new NodeException("ip-invalid");
 
         this.ip = ip;
     }
 
     public void setPort(int port) throws NodeException {
         if (port < 0 || port > 65535)
-            throw new NodeException("invalid port parameter");
+            throw new NodeException("port-invalid");
 
         this.port = port;
     }

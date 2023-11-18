@@ -43,7 +43,7 @@ public abstract class SocketRunner {
     /* Setters */
     private void setSocket(Socket socket) throws RunnerException {
         if (socket.isClosed())
-            throw new RunnerException("one-side closed");
+            throw new RunnerException("socket-close");
 
         this.socket = socket;
     }
@@ -53,7 +53,7 @@ public abstract class SocketRunner {
             this.reader = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
         } catch (IOException e) {
             this.close();
-            throw new RunnerException("socket lost connection");
+            throw new RunnerException("socket-connection");
         }
     }
 
@@ -62,7 +62,7 @@ public abstract class SocketRunner {
             this.writer = new DataOutputStream(this.socket.getOutputStream());
         } catch (IOException e) {
             this.close();
-            throw new RunnerException("socket lost connection");
+            throw new RunnerException("socket-connection");
         }
     }
 
@@ -117,7 +117,7 @@ public abstract class SocketRunner {
             }
         } catch (IOException e) {
             this.close();
-            throw new RunnerException("socket lost connection");
+            throw new RunnerException("socket-connection");
         }
     }
 
@@ -132,7 +132,7 @@ public abstract class SocketRunner {
             msg.serialize(this.writer);
         } catch(IOException e) {
             this.close();
-            throw new RunnerException("socket lost connection");
+            throw new RunnerException("socket-connection");
         } finally {
             this.lock.unlock();
         }

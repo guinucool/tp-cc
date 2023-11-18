@@ -166,7 +166,7 @@ public class TrackerFile extends FSFile {
 
     public void addNodeToBlock(int offset, Node node) throws BlockException, FileException {
         if (offset >= this.blocks.size() || offset < 0)
-            throw new FileException("given offset out of range");
+            throw new FileException("offset-invalid");
 
         this.blocks.get(offset).addNode(node);
     }
@@ -183,7 +183,7 @@ public class TrackerFile extends FSFile {
             return new TrackerFile(args.get(0), args.get(1), size);
 
         } catch (NumberFormatException e) {
-            throw new FileException("not numeric size given");
+            throw new FileException("size-invalid");
         }
     }
 }

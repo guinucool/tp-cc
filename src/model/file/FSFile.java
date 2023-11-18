@@ -45,21 +45,21 @@ public abstract class FSFile {
     /* Setters */
     private void setHash(String hash) throws FileException {
         if (hash.equals(EMPTY_MD5))
-            throw new FileException("hash parameter incorrect");
+            throw new FileException("hash-invalid");
 
         this.hash = hash;
     }
 
     public void setName(String name) throws FileException {
         if (name.equals(""))
-            throw new FileException("filename parameter incorrect");
+            throw new FileException("filename-invalid");
 
         this.name = name;
     }
 
     public void setSize(long size) throws FileException {
         if (size <= 0)
-            throw new FileException("size parameter incorrect");
+            throw new FileException("size-invalid");
 
         this.size = size;
     }

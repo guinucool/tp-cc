@@ -108,7 +108,7 @@ public class NodeFile extends FSFile {
             return sb.toString();
 
         } catch (NoSuchAlgorithmException | IOException e) {
-            throw new FileException("file is not readable");
+            throw new FileException("file-invalid");
         }
     }
 }

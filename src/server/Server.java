@@ -50,7 +50,7 @@ public class Server {
             this.runners = new ArrayList<>();
             this.threads = new ArrayList<>();
         } catch (IOException e) {
-            throw new ServerException("server failed to start");
+            throw new ServerException("server-failed");
         }
     }
 
@@ -61,7 +61,7 @@ public class Server {
             this.runners = new ArrayList<>();
             this.threads = new ArrayList<>();
         } catch (IOException e) {
-            throw new ServerException("server failed to start");
+            throw new ServerException("server-failed");
         }
     }
 
@@ -81,7 +81,7 @@ public class Server {
             return ip;
         
         } catch (SocketException e) {
-            throw new ServerException("server not connected to a network");
+            throw new ServerException("server-failed");
         }
     }
 
@@ -132,7 +132,7 @@ public class Server {
 
         } catch (IOException e) {
             if (!this.isClosed())
-                throw new ServerException("server ran out of resources");
+                throw new ServerException("server-resources");
         }
     }
 
