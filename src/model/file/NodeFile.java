@@ -1,13 +1,23 @@
-package files;
+package model.file;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import message.TrackMessage;
 
 /**
  * Objeto que regista um ficheiro que um cliente possui na visão do próprio.
+ * 
+ * @param HASH_OFFSET
+ *      O offset de bytes que é usado no hash do ficheiro.
  * 
  * @param sent
  *      Verifica se o ficheiro do cliente já foi enviado (com sucesso) para o servidor.
@@ -21,6 +31,11 @@ public class NodeFile extends FSFile {
     /* Constructors */
     public NodeFile() {
         super();
+        this.sent = false;
+    }
+    
+    public NodeFile(String hash, String filename, long size) throws FileException {
+        super(hash, filename, size);
         this.sent = false;
     }
 
@@ -68,13 +83,10 @@ public class NodeFile extends FSFile {
 
     public TrackMessage toMessage() {
         List<String> args = new ArrayList<>(Arrays.asList(super.getHash(), super.getName(), "" + super.getSize()));
-
         return new TrackMessage(TrackMessage.Type.REQUEST, 200, args);
     }
 
-    public static String filehash(File file) {
-
-        String hash = getEmptyHash();
+    public static String filehash(File file) throws FileException {
 
         try {
             MessageDigest digestor = MessageDigest.getInstance("MD5");
@@ -93,11 +105,10 @@ public class NodeFile extends FSFile {
             for (byte b : dbytes)
                 sb.append(String.format("%02x", b & 0xff));
 
-            hash = sb.toString();
-        } catch (NoSuchAlgorithmException | IOException e) {
-            /* Não é preciso tratar a exceção */
-        }
+            return sb.toString();
 
-        return hash;
+        } catch (NoSuchAlgorithmException | IOException e) {
+            throw new FileException("file is not readable");
+        }
     }
 }

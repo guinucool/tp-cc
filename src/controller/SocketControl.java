@@ -5,6 +5,7 @@ import java.util.*;
 
 import files.*;
 import message.*;
+import model.file.NodeFile;
 import socket.*;
 
 public class SocketControl {

@@ -3,6 +3,9 @@ package controller;
 import java.util.*;
 
 import files.*;
+import model.file.FileException;
+import model.file.TrackerFile;
+import model.file.block.BlockException;
 import tracker.*;
 
 public class TrackerControl {

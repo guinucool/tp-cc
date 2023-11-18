@@ -4,6 +4,9 @@ import java.util.*;
 import java.util.concurrent.locks.*;
 
 import files.*;
+import model.file.FileException;
+import model.file.TrackerFile;
+import model.file.block.BlockException;
 
 /**
  * Objeto que define como o tracker funciona e armazena informação.

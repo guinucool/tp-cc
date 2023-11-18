@@ -3,6 +3,9 @@ package files;
 import java.io.*;
 import java.util.*;
 
+import model.file.FileException;
+import model.file.NodeFile;
+
 /**
  * Objeto que define uma diretoria usada por um cliente para armazenar ficheiros.
  * 

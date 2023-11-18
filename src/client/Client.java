@@ -6,6 +6,7 @@ import java.util.*;
 
 import controller.*;
 import files.*;
+import model.file.NodeFile;
 import socket.*;
 import view.*;
 

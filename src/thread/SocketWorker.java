@@ -4,9 +4,9 @@ import java.io.*;
 import java.util.*;
 
 import controller.*;
-import files.BlockException;
-import files.FileException;
 import message.*;
+import model.file.FileException;
+import model.file.block.BlockException;
 import socket.*;
 import tracker.*;
 import view.*;

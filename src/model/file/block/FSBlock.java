@@ -1,8 +1,9 @@
-package files;
+package model.file.block;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
 
-import tracker.*;
+import tracker.Node;
 
 /**
  * Objeto que regista um bloco de um ficheiro do sistema.
@@ -35,16 +36,16 @@ public class FSBlock {
     }
 
     /* Setters */
-    public void setOffset(int offset) throws BlockException.InvalidBlockOffsetException {
+    private void setOffset(int offset) throws BlockException {
         if (offset < 0)
-            throw new BlockException.InvalidBlockOffsetException("" + offset);
+            throw new BlockException("invalid offset parameter");
 
         this.offset = offset;
     }
 
-    public void addNode(Node node) throws BlockException.NodeExistsBlockException {
+    public void addNode(Node node) throws BlockException {
         if (this.nodes.contains(node))
-            throw new BlockException.NodeExistsBlockException(node.toString());
+            throw new BlockException("node already exists");
 
         this.nodes.add(node);
     }
@@ -95,7 +96,7 @@ public class FSBlock {
         return builder.toString();
     }
 
-    public String toMessage() {
+    /*public String toMessage() {
 
         StringBuilder builder = new StringBuilder();
         String prefix = "";
@@ -106,5 +107,5 @@ public class FSBlock {
         }
 
         return builder.toString();
-    }
+    }*/
 }

@@ -1,8 +1,9 @@
-package files;
+package model.file;
 
 import java.util.*;
 
-import message.TrackMessage;
+import model.file.block.BlockException;
+import model.file.block.FSBlock;
 import tracker.*;
 
 /**
@@ -31,20 +32,25 @@ public class TrackerFile extends FSFile {
         this.blocks = new ArrayList<FSBlock>();
     }
 
-    public TrackerFile(String hash, String name, long size) throws FileException, BlockException {
+    public TrackerFile(String hash, String name, long size) throws FileException {
         super(hash, name, size);
         this.generateBlocksize();
         this.blocks = new ArrayList<>();
 
-        for (int i = 0; i < this.getNumBlocks(); i++)
-            this.blocks.add(new FSBlock(i));
+        for (int i = 0; i < this.getNumBlocks(); i++) {
+            try {
+                this.blocks.add(new FSBlock(i));
+            } catch (BlockException e) {
+                /* Não é preciso tratar esta exceção */
+            }
+        }
     }
 
-    public TrackerFile(String hash, String name, long size, long blocksize, List<FSBlock> blocks) throws FileException {
+    /*public TrackerFile(String hash, String name, long size, long blocksize, List<FSBlock> blocks) throws FileException {
         super(hash, name, size);
         this.setBlocksize(blocksize);
         this.setBlocks(blocks);
-    }
+    }*/
 
     public TrackerFile(TrackerFile file){
         super(file);
@@ -53,23 +59,23 @@ public class TrackerFile extends FSFile {
     }
 
     /* Setters */
-    private void setBlocksize(long blocksize) throws FileException.InvalidBlocksizeException {
+    /*private void setBlocksize(long blocksize) throws FileException {
         if (blocksize < 1)
-            throw new FileException.InvalidBlocksizeException("" + blocksize);
+            throw new FileException("invalid blocksize parameter");
 
         this.blocksize = blocksize;
     }
 
-    private void setBlocks(List<FSBlock> blocks) throws FileException.InvalidBlocksException {
+    private void setBlocks(List<FSBlock> blocks) throws FileException {
 
         if (this.getNumBlocks() != blocks.size())
-            throw new FileException.InvalidBlocksException(this.blocks.toString());
+            throw new FileException("invalid blocks parameter");
 
         this.blocks = new ArrayList<FSBlock>();
 
         for(FSBlock block: blocks)
             this.blocks.add((FSBlock) block.clone());
-    }
+    }*/
 
     /* Getters */
     public long getBlocksize() {
@@ -78,23 +84,23 @@ public class TrackerFile extends FSFile {
 
     public long getNumBlocks() {
 
-        long num = (this.getSize() / this.blocksize);
+        long num = (super.getSize() / this.blocksize);
 
-        if(this.getSize() % this.blocksize != 0)
+        if(super.getSize() % this.blocksize != 0)
             num++;
 
         return num;
     }
 
-    public long getLastBlocksize() {
+    /*public long getLastBlocksize() {
 
-        long size = this.getSize() % this.blocksize;
+        long size = super.getSize() % this.blocksize;
 
         if (size == 0)
-            size = this.getSize();
+            size = super.getSize();
 
         return size;
-    }
+    }*/
 
     public List<FSBlock> getBlocks() {
 
@@ -129,7 +135,7 @@ public class TrackerFile extends FSFile {
         return builder.toString();
     }
 
-    public TrackMessage toMessage() {
+    /*public TrackMessage toMessage() {
         
         List<String> args = new ArrayList<>(Arrays.asList(super.getHash(), super.getName(), "" + super.getSize(), "" + this.getBlocksize()));
 
@@ -137,14 +143,7 @@ public class TrackerFile extends FSFile {
             args.add(block.toMessage());
 
         return new TrackMessage(TrackMessage.Type.RESPONSE, 200, args);
-    }
-
-    public static TrackerFile fromMessage(List<String> args) throws FileException, BlockException, NumberFormatException {
-
-        long size = Long.parseLong(args.get(2));
-
-        return new TrackerFile(args.get(0), args.get(1), size);
-    }
+    }*/
 
     private void generateBlocksize() {
 
@@ -159,14 +158,14 @@ public class TrackerFile extends FSFile {
 	    this.blocksize = blocksize / 2;
     }
 
-    public void addNode(Node node) throws BlockException.NodeExistsBlockException {
+    public void addNode(Node node) throws BlockException {
         for (FSBlock block : this.blocks)
             block.addNode(node);
     }
 
-    public void addNodeToBlock(int offset, Node node) throws BlockException.NodeExistsBlockException, FileException.BlockOutOfRangeException {
-        if (offset >= this.blocks.size())
-            throw new FileException.BlockOutOfRangeException("" + offset);
+    public void addNodeToBlock(int offset, Node node) throws BlockException, FileException {
+        if (offset >= this.blocks.size() || offset < 0)
+            throw new FileException("given offset out of range");
 
         this.blocks.get(offset).addNode(node);
     }
@@ -174,5 +173,16 @@ public class TrackerFile extends FSFile {
     public void removeNode(Node node) {
         for (FSBlock block : this.blocks)
             block.removeNode(node);
+    }
+
+    public static TrackerFile fromMessage(List<String> args) throws FileException {
+
+        try {
+            long size = Long.parseLong(args.get(2));
+            return new TrackerFile(args.get(0), args.get(1), size);
+
+        } catch (NumberFormatException e) {
+            throw new FileException("not numeric size given");
+        }
     }
 }

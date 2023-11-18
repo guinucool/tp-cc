@@ -1,10 +1,10 @@
-package files;
+package model.file;
 
 /**
  * Objeto que regista, na generalidade dos casos, um ficheiro do sistema.
  * 
- * @param hashlist
- *      A lista de todas as hashcodes registadas até agora no programa (para evitar repetições).
+ * @param EMPTY_MD5
+ *      O hash de um ficheiro em branco.
  * 
  * @param hash
  *      A hashcode do ficheiro.
@@ -43,23 +43,23 @@ public abstract class FSFile {
     }
 
     /* Setters */
-    private void setHash(String hash) throws FileException.EmptyObjectHashException {
+    private void setHash(String hash) throws FileException {
         if (hash.equals(EMPTY_MD5))
-            throw new FileException.EmptyObjectHashException(hash);
+            throw new FileException("hash parameter incorrect");
 
         this.hash = hash;
     }
 
-    public void setName(String name) throws FileException.EmptyFilenameException {
+    public void setName(String name) throws FileException {
         if (name.equals(""))
-            throw new FileException.EmptyFilenameException(name);
+            throw new FileException("filename parameter incorrect");
 
         this.name = name;
     }
 
-    public void setSize(long size) throws FileException.InvalidFileSizeException {
+    public void setSize(long size) throws FileException {
         if (size <= 0)
-            throw new FileException.InvalidFileSizeException("" + size);
+            throw new FileException("size parameter incorrect");
 
         this.size = size;
     }
