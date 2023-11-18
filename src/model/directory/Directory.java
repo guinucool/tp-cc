@@ -1,7 +1,10 @@
-package files;
+package model.directory;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import model.file.FileException;
 import model.file.NodeFile;
@@ -34,11 +37,12 @@ public class Directory {
     }
 
     /* Setters */
-    private void setPath(String path) throws PathException.PathNotFoundException {
+    private void setPath(String path) throws PathException {
+
         File dir = new File(path);
 
         if(!dir.isDirectory())
-            throw new PathException.PathNotFoundException(path);
+            throw new PathException("invalid path given");
 
         this.directory = dir;
     }
@@ -88,9 +92,9 @@ public class Directory {
         }
     }
 
-    public void sendFile(String hash) throws PathException.FileNotInPathException {
+    public void sendFile(String hash) throws PathException {
         if (!this.files.containsKey(hash))
-            throw new PathException.FileNotInPathException(hash);
+            throw new PathException("file is not in path");
 
         this.files.get(hash).send();
     }

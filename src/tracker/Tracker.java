@@ -7,6 +7,7 @@ import files.*;
 import model.file.FileException;
 import model.file.TrackerFile;
 import model.file.block.BlockException;
+import model.node.Node;
 
 /**
  * Objeto que define como o tracker funciona e armazena informação.

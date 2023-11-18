@@ -7,6 +7,7 @@ import controller.*;
 import message.*;
 import model.file.FileException;
 import model.file.block.BlockException;
+import model.node.NodeException;
 import socket.*;
 import tracker.*;
 import view.*;

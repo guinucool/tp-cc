@@ -6,6 +6,8 @@ import java.util.*;
 
 import controller.*;
 import files.*;
+import model.directory.Directory;
+import model.directory.PathException;
 import model.file.NodeFile;
 import socket.*;
 import view.*;

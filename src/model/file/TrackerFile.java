@@ -1,10 +1,11 @@
 package model.file;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
 
 import model.file.block.BlockException;
 import model.file.block.FSBlock;
-import tracker.*;
+import model.node.Node;
 
 /**
  * Objeto que define um ficheiro na visão do tracker.

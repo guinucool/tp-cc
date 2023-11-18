@@ -1,6 +1,4 @@
-package tracker;
-
-import java.util.*;
+package model.node;
 
 /**
  * Objeto que regista um node que possui ligação com o servidor.
@@ -12,8 +10,6 @@ import java.util.*;
  *      A porta associada ao servidor de distribuição de ficheiros do node.
  */
 public class Node {
-
-    private static List<String> iplist = new ArrayList<>();
     
     private String ip;
     private int port;
@@ -35,19 +31,16 @@ public class Node {
     }
 
     /* Setters */
-    private void setIp(String ip) throws NodeException.NodeRegisteredException, NodeException.EmptyNodeIpException {
-        if (iplist.contains(ip))
-            throw new NodeException.NodeRegisteredException(ip);
-
+    private void setIp(String ip) throws NodeException {
         if (ip.equals(""))
-            throw new NodeException.EmptyNodeIpException(ip);
+            throw new NodeException("invalid ip parameter");
 
         this.ip = ip;
     }
 
-    public void setPort(int port) throws NodeException.InvalidNodePortException {
+    public void setPort(int port) throws NodeException {
         if (port < 0 || port > 65535)
-            throw new NodeException.InvalidNodePortException("" + port);
+            throw new NodeException("invalid port parameter");
 
         this.port = port;
     }
@@ -88,12 +81,12 @@ public class Node {
         return builder.toString();
     }
 
-    public String toMessage() {
+    /*public String toMessage() {
 
         StringBuilder builder = new StringBuilder();
 
         builder.append(this.ip).append(":").append(this.port);
 
         return builder.toString();
-    }
+    }*/
 }

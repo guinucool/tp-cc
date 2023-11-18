@@ -3,7 +3,7 @@ package model.file.block;
 import java.util.List;
 import java.util.ArrayList;
 
-import tracker.Node;
+import model.node.Node;
 
 /**
  * Objeto que regista um bloco de um ficheiro do sistema.
