@@ -1,9 +1,8 @@
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.util.Scanner;
 
-import server.*;
-import thread.*;
+import server.Server;
+import server.ServerException;
+import thread.ServerWorker;
 
 public class FS_Tracker {
     
@@ -21,15 +20,10 @@ public class FS_Tracker {
             scanner.close();
 
             server.close();
-            System.exit(0);
 
-        } catch (SocketException e) {
-            System.out.println("Server lost connection.");
-            System.exit(1);
-            
-        } catch (IOException e) {
-            System.out.println("Failed to open server on the given port. Maybe it is already in use?");
-            System.exit(1);
+        } catch (ServerException e) {
+            System.out.println("Couldn't initialize server! Check if it is connected to a network or if the port is not in use!");
+            System.exit(1);   
         }
     }
 }
