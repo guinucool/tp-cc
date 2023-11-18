@@ -87,4 +87,13 @@ public class Node {
 
         return builder.toString();
     }
+
+    public String toMessage() {
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(this.ip).append(":").append(this.port);
+
+        return builder.toString();
+    }
 }

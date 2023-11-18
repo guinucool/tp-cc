@@ -2,6 +2,7 @@ package files;
 
 import java.util.*;
 
+import message.TrackMessage;
 import tracker.*;
 
 /**
@@ -126,6 +127,23 @@ public class TrackerFile extends FSFile {
         builder.append(super.toString());
 
         return builder.toString();
+    }
+
+    public TrackMessage toMessage() {
+        
+        List<String> args = new ArrayList<>(Arrays.asList(super.getHash(), super.getName(), "" + super.getSize(), "" + this.getBlocksize()));
+
+        for (FSBlock block : this.blocks)
+            args.add(block.toMessage());
+
+        return new TrackMessage(TrackMessage.Type.RESPONSE, 200, args);
+    }
+
+    public static TrackerFile fromMessage(List<String> args) throws FileException, BlockException, NumberFormatException {
+
+        long size = Long.parseLong(args.get(2));
+
+        return new TrackerFile(args.get(0), args.get(1), size);
     }
 
     private void generateBlocksize() {

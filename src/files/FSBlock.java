@@ -94,4 +94,17 @@ public class FSBlock {
 
         return builder.toString();
     }
+
+    public String toMessage() {
+
+        StringBuilder builder = new StringBuilder();
+        String prefix = "";
+
+        for (Node node : this.nodes) {
+            builder.append(prefix).append(node.toMessage());
+            prefix = ",";
+        }
+
+        return builder.toString();
+    }
 }

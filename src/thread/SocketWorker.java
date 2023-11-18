@@ -12,6 +12,7 @@ public class SocketWorker implements Runnable {
     /* Constructors */
     public SocketWorker(SocketRunner runner) {
         this.runner = runner;
+        System.out.println("Working!");
     }
 
     /* Thread */

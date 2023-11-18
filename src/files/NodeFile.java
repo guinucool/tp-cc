@@ -2,6 +2,9 @@ package files;
 
 import java.io.*;
 import java.security.*;
+import java.util.*;
+
+import message.TrackMessage;
 
 /**
  * Objeto que regista um ficheiro que um cliente possui na visão do próprio.
@@ -61,6 +64,12 @@ public class NodeFile extends FSFile {
         builder.append(super.toString());
 
         return builder.toString();
+    }
+
+    public TrackMessage toMessage() {
+        List<String> args = new ArrayList<>(Arrays.asList(super.getHash(), super.getName(), "" + super.getSize()));
+
+        return new TrackMessage(TrackMessage.Type.REQUEST, 200, args);
     }
 
     public static String filehash(File file) {

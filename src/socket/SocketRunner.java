@@ -65,6 +65,14 @@ public abstract class SocketRunner {
         return this.socket.getRemoteSocketAddress().toString().substring(1).split(":")[0];
     }
 
+    public int getSourcePort() {
+        return this.socket.getLocalPort();
+    }
+
+    public int getDestPort() {
+        return this.socket.getPort();
+    }
+
     /* Auxiliar */
     public String toString() {
         
@@ -123,6 +131,13 @@ public abstract class SocketRunner {
 
     /* Checkers */
     public boolean isClosed() {
-        return this.socket.isClosed();
+        
+        this.lock.lock();
+
+        try {
+            return this.socket.isClosed();
+        } finally {
+            this.lock.unlock();
+        }
     }
 }

@@ -49,6 +49,7 @@ public class Menu {
     public void readCommand() {
 
         Scanner scanner = new Scanner(System.in);
+        System.out.println("> ");
         String argument = scanner.nextLine();
 
         List <String> args = Arrays.asList(argument.split(" "));
