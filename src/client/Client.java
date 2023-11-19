@@ -34,6 +34,7 @@ public class Client {
             Socket socket = new Socket(ip, 9090);
             this.runner = new ClientSocketRunner(socket);  
             this.sendRegister();
+            this.sendUpdate();
         } catch (IOException e) {
             throw new ClientException("socket-failed");
         }
