@@ -27,7 +27,7 @@ public class ClientView {
         System.out.println("Files on directory:");
 
         for (NodeFile file : this.client.getFiles())
-            System.out.println("File - Hash: " + file.getHash() + " Filename: " + file.getName() + " Size: " + file.getSize());
+            System.out.println("File - Hash: " + file.getHash() + " Filename: " + file.getName() + " Size: " + file.getSize() + " Sent: " + file.isSent());
     }
 
     public void printIp() throws ClientException {

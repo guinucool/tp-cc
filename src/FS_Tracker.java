@@ -10,7 +10,7 @@ public class FS_Tracker {
 
         try {
             Server server = new Server();
-            System.out.println("Server active at " + server.getIp() + " port " + server.getPort());
+            System.out.println("Server active at " + server.getIp() + " port " + server.getPort() + ".");
 
             Thread worker = new Thread(new ServerWorker(server));
             worker.start();

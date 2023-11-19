@@ -4,7 +4,9 @@ import java.util.List;
 
 import client.Client;
 import client.ClientException;
+import client.ClientException.AllFilesSentException;
 import client.ClientException.FilenameExistsException;
+
 import controller.ClientControl;
 import socket.RunnerException;
 import view.ClientView;
@@ -43,6 +45,7 @@ public class Console {
         if (cmd.equals("QUIT")) {
             try {
                 this.control.sendDisconnect();
+                System.out.println("Disconnecting...");
             } catch (RunnerException e) {
                 System.out.println("Connection was already broken...");
             } catch (ClientException e) {
@@ -53,6 +56,9 @@ public class Console {
         if (cmd.equals("UPDATE")) {
             try {
                 this.control.updateServer();
+                System.out.println("Sucessful update!");
+            } catch (AllFilesSentException e) {
+                System.out.println("All available files have already been sent to the server!");
             } catch (FilenameExistsException e) {
                 System.out.println("The filename " + e.getMessage() + " already exists on the server, please change the name!");
             } catch (RunnerException e) {

@@ -82,7 +82,8 @@ public class SocketWorker implements Runnable {
             }
 
         } catch (RunnerException e) {
-            System.out.println("Unexpected connection loss with socket " + this.runner.getDestIP() + "!");
+            this.control.disconnectNode(this.clientIp);
+            System.out.println("Connection loss with socket " + this.runner.getDestIP() + "!");
         }
     }
 }

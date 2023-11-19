@@ -19,6 +19,7 @@ import model.file.NodeFile;
 import socket.SocketRunner;
 import socket.ClientSocketRunner;
 import socket.RunnerException;
+import client.ClientException.AllFilesSentException;
 import client.ClientException.FilenameExistsException;;
 
 public class Client {
@@ -130,6 +131,9 @@ public class Client {
     public void sendUpdate() throws ClientException, RunnerException {
 
         List<NodeFile> files = this.directory.getFiles(true);
+
+        if (files.isEmpty())
+            throw new AllFilesSentException("client-sent");
 
         for (NodeFile file : files) {
             this.runner.sendMessage(new TrackMessage(Type.REQUEST, 200, file.toStrings()));
