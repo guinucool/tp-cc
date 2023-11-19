@@ -11,12 +11,14 @@ public class FS_Node {
         try {
             if (args.length == 3) {
                 Client client = new Client(args[0], args[1], Integer.parseInt(args[2]));
+                System.out.println("FS Track protocol connection established with server " + client.getDestIP() + " port " + client.getDestPort() + ".");
                 Console cli = new Console(client);
                 cli.run();
             }
 
             else if (args.length == 2) {
                 Client client = new Client(args[0], args[1]);
+                System.out.println("FS Track protocol connection established with server " + client.getDestIP() + " port " + client.getDestPort() + ".");
                 Console cli = new Console(client);
                 cli.run();
             }
