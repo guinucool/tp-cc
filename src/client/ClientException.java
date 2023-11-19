@@ -1,21 +1,9 @@
 package client;
 
 public class ClientException extends Exception {
-    
-    public static class ClientRejectedConnectionException extends ClientException {
-        public ClientRejectedConnectionException(String msg) {
-            super(msg);
-        }
-    }
 
-    public static class FilenameExistsServerException extends ClientException {
-        public FilenameExistsServerException(String msg) {
-            super(msg);
-        }
-    }
-
-    public static class ServerRejectedFileException extends ClientException {
-        public ServerRejectedFileException(String msg) {
+    public static class FilenameExistsException extends ClientException {
+        public FilenameExistsException(String msg) {
             super(msg);
         }
     }

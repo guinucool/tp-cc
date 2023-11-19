@@ -17,6 +17,11 @@ import java.util.*;
  * 
  * Nota: Existem vários códigos de mensagem como:
  *      - 0 (Sucesso)
+ *      - 1 (Fail)
+ *      - 100 (Register)
+ *      - 101 (Disconnect)
+ *      - 200 (File)
+ *      - 201 (Filename repeated)
  */
 public class TrackMessage {
     
@@ -87,6 +92,15 @@ public class TrackMessage {
 
     public List<String> getArguments() {
         return new ArrayList<>(this.arguments);
+    }
+
+    /* Checkers */
+    public boolean isSucessResponse() {
+        return this.type == Type.RESPONSE && this.code == 0;
+    }
+
+    public boolean isTarget(Type type, int code, int nrarguments) {
+        return this.type == type && this.code == code && this.arguments.size() == nrarguments;
     }
 
     /* Auxiliar */

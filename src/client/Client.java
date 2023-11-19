@@ -1,32 +1,49 @@
 package client;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+import java.net.Socket;
 
-import controller.*;
-import files.*;
+import java.util.List;
+import java.util.Arrays;
+
+import message.TrackMessage;
+import message.TrackMessage.Type;
+
 import model.directory.Directory;
 import model.directory.PathException;
 import model.file.NodeFile;
-import socket.*;
-import view.*;
+
+import socket.SocketRunner;
+import socket.ClientSocketRunner;
+import socket.RunnerException;
+import client.ClientException.FilenameExistsException;;
 
 public class Client {
     
-    private SocketControl control;
-    private SocketView view;
     private Directory directory;
+    private SocketRunner runner;
 
     /* Constructors */
-    public Client(String path, String ip, int port) throws PathException, UnknownHostException, IOException, SocketRunnerException {
+    public Client(String path, String ip) throws PathException, ClientException, RunnerException {
         this.directory = new Directory(path);
 
-        Socket socket = new Socket(ip, port);
-        SocketRunner runner = new ClientSocketRunner(socket);
+        try {
+            Socket socket = new Socket(ip, 9090);
+            this.runner = new ClientSocketRunner(socket);  
+        } catch (IOException e) {
+            throw new ClientException("socket-failed");
+        }
+    }
 
-        this.control = new SocketControl(runner);
-        this.view = new SocketView(runner);
+    public Client(String path, String ip, int port) throws PathException, ClientException, RunnerException {
+        this.directory = new Directory(path);
+
+        try {
+            Socket socket = new Socket(ip, port);
+            this.runner = new ClientSocketRunner(socket);  
+        } catch (IOException e) {
+            throw new ClientException("socket-failed");
+        }
     }
 
     /* Getters */
@@ -39,24 +56,24 @@ public class Client {
     }
 
     public String getSourceIP() {
-        return this.view.getSourceIP();
+        return this.runner.getSourceIP();
     }
 
     public String getDestIP() {
-        return this.view.getDestIP();
+        return this.runner.getDestIP();
     }
 
     public int getSourcePort() {
-        return this.view.getSourcePort();
+        return this.runner.getSourcePort();
     }
 
     public int getDestPort() {
-        return this.view.getDestPort();
+        return this.runner.getDestPort();
     }
 
     /* Checkers */
     public boolean isClosed() {
-        return this.view.isClosed();
+        return this.runner.isClosed();
     }
 
     /* Auxiliar */
@@ -73,42 +90,49 @@ public class Client {
         this.directory.readFiles();
     }
 
-    public void register() throws ClientException {
-        try {
-            this.control.sendRegister(9090);
-        } catch (IOException | SocketControlException e) {
-            this.control.close();
-            throw new ClientException.ClientRejectedConnectionException(e.getMessage());
+    public void sendRegister() throws RunnerException, ClientException {
+
+        this.runner.sendMessage(new TrackMessage(Type.REQUEST, 100, Arrays.asList("9090")));
+        TrackMessage res = this.runner.listenMessage();
+
+        if (!res.isSucessResponse()) {
+            this.runner.close();
+            throw new ClientException("runner-unsafe");
         }
     }
 
-    public void updateServerFiles() throws ClientException {
+    public void sendUpdate() throws ClientException, RunnerException {
+
         List<NodeFile> files = this.directory.getFiles(true);
 
-        try {
-            for (NodeFile file : files) {
-                this.control.sendFile(file);
-                this.directory.sendFile(file.getHash());
+        for (NodeFile file : files) {
+            this.runner.sendMessage(file.toMessage());
+            TrackMessage res = this.runner.listenMessage();
+
+            if (res.isTarget(Type.RESPONSE, 201, 1))
+                throw new FilenameExistsException(res.getArguments().get(0));
+
+            if (!res.isSucessResponse()) {
+                this.runner.close();
+                throw new ClientException("runner-unsafe");
             }
-        } catch (SocketControlException.RepeatedFilenameException e) {
-            throw new ClientException.FilenameExistsServerException(e.getMessage());
-        } catch (SocketControlException.FileRefusedException e) {
-            throw new ClientException.ServerRejectedFileException(e.getMessage());
-        } catch (IOException | SocketControlException e) {
-            this.control.close();
-            throw new ClientException.ClientRejectedConnectionException(e.getMessage());
-        } catch (PathException.FileNotInPathException e) {
-            /* Não é preciso tratar esta exceção */
+
+            try {
+                this.directory.sendFile(file.getHash());
+            } catch (PathException e) {
+                /* Não é preciso tratar esta exceção */
+            }
         }
     }
 
-    public void disconnect() throws ClientException {
-        try {
-            this.control.sendDisconnect();
-        } catch (IOException | SocketControlException e) {
-            throw new ClientException.ClientRejectedConnectionException(e.getMessage());
-        } finally {
-            this.control.close();
-        }
+    public void sendDisconnect() throws ClientException, RunnerException {
+
+        this.runner.sendMessage(new TrackMessage(Type.REQUEST, 101, Arrays.asList()));
+        TrackMessage res = this.runner.listenMessage();
+
+        this.runner.close();
+
+        if (!res.isSucessResponse())
+            throw new ClientException("runner-unsafe");
     }
 }
