@@ -23,7 +23,7 @@ public class FSBlock {
     /* Constructors */
     public FSBlock() {
         this.offset = 0;
-        this.nodes = new ArrayList<Node>();
+        this.nodes = new ArrayList<>();
     }
 
     public FSBlock(int offset) throws BlockException {
@@ -33,7 +33,7 @@ public class FSBlock {
 
     public FSBlock(FSBlock block) {
         this.offset = block.offset;
-        this.nodes = this.getNodes();
+        this.nodes = block.getNodes();
     }
 
     /* Setters */
@@ -62,7 +62,7 @@ public class FSBlock {
     }
 
     public List<Node> getNodes() {
-        List<Node> nodelist = new ArrayList<Node>();
+        List<Node> nodelist = new ArrayList<>();
 
         for (Node node : this.nodes)
             nodelist.add((Node) node.clone());

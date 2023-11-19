@@ -48,9 +48,9 @@ public class SocketWorker implements Runnable {
                 try {
 
                     if (req.isTarget(Type.REQUEST, 100, 2)) {
-                        this.clientIp = args.get(0);
                         System.out.println("Incoming connection from " + this.runner.getDestIP() + "!");
                         this.control.registerNode(args.get(0), args.get(1));
+                        this.clientIp = args.get(0);
                     }
 
                     else if (req.isTarget(Type.REQUEST, 200, 3)) {

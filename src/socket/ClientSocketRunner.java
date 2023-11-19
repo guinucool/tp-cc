@@ -10,6 +10,7 @@ public class ClientSocketRunner extends SocketRunner {
     /* Constructors */
     public ClientSocketRunner(Socket socket) throws RunnerException {
         super(socket);
+        this.setStream();
     }
 
     /* Setters */

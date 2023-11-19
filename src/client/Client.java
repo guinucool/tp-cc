@@ -32,7 +32,7 @@ public class Client {
 
         try {
             Socket socket = new Socket(ip, 9090);
-            this.runner = new ClientSocketRunner(socket);  
+            this.runner = new ClientSocketRunner(socket);
             this.sendRegister();
             this.sendUpdate();
         } catch (IOException e) {
