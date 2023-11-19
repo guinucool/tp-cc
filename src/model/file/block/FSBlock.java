@@ -100,9 +100,15 @@ public class FSBlock {
     public List<String> toStrings() {
 
         List<String> list = new ArrayList<>(Arrays.asList(this.offset + ""));
+        StringBuilder builder = new StringBuilder();
+        String prefix = "";
 
-        for (Node node : this.nodes)
-            list.add(String.join(":", node.toStrings()));
+        for (Node node : this.nodes) {
+            builder.append(prefix).append(String.join(":", node.toStrings()));
+            prefix = ",";
+        }
+
+        list.add(builder.toString());
 
         return list;
     }

@@ -1,69 +1,88 @@
 package thread;
 
-import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
-import controller.*;
-import message.*;
+import controller.TrackerControl;
+import view.TrackerView;
+import message.MessageException;
+import message.TrackMessage;
+import message.TrackMessage.Type;
+
 import model.file.FileException;
 import model.file.block.BlockException;
 import model.node.NodeException;
 import model.tracker.TrackerException;
-import socket.*;
-import tracker.*;
-import view.*;
+import model.tracker.TrackerException.FilenameInTrackerException;
+
+import socket.SocketRunner;
+import socket.RunnerException;
 
 public class SocketWorker implements Runnable {
     
     private SocketRunner runner;
     private TrackerControl control;
     private TrackerView view;
+    private String clientIp;
 
     /* Constructors */
     public SocketWorker(SocketRunner runner) {
         this.runner = runner;
+        this.control = new TrackerControl();
+        this.view = new TrackerView();
+        this.clientIp = "";
     }
 
     /* Thread */
     public void run() {
-        while (!this.runner.isClosed()) {
-            try {
+        try {
+
+            this.runner.setStream();
+
+            while (!this.runner.isClosed()) {
+                TrackMessage req = this.runner.listenMessage();
+                List<String> args = req.getArguments();
+                List<String> res = new ArrayList<>();
+
                 try {
-                    TrackMessage msg = this.runner.listenMessage();
 
-                    if (msg.getType() != TrackMessage.Type.REQUEST)
-                        break;
-
-                    if (msg.getCode() == 100) {
-                        this.control.registerNode(this.runner.getDestIP(), msg.getArguments());
-                        this.runner.sendMessage(new TrackMessage(TrackMessage.Type.RESPONSE, 0, Arrays.asList()));
+                    if (req.isTarget(Type.REQUEST, 100, 2)) {
+                        this.clientIp = args.get(0);
+                        System.out.println("Incoming connection from " + this.runner.getDestIP() + "!");
+                        this.control.registerNode(args.get(0), args.get(1));
                     }
-                    else if (msg.getCode() == 101) {
-                        this.runner.sendMessage(new TrackMessage(TrackMessage.Type.RESPONSE, 0, Arrays.asList()));
-                        break;
-                    }
-                    else if (msg.getCode() == 200) {
-                        this.control.registerFile(this.runner.getDestIP(), msg.getArguments());
-                        this.runner.sendMessage(new TrackMessage(TrackMessage.Type.RESPONSE, 0, Arrays.asList()));
-                    }
-                    else
-                        break;
 
+                    else if (req.isTarget(Type.REQUEST, 200, 3)) {
+                        System.out.println("Incoming file from " + this.runner.getDestIP() + "!");
+                        this.control.registerFile(this.clientIp, args.get(0), args.get(1), args.get(2));
+                    }
 
-                } catch (TrackerException.FileNotInTrackerException e) {
-                    this.runner.sendMessage(new TrackMessage(TrackMessage.Type.RESPONSE, 202, Arrays.asList(e.getMessage())));
-                } catch (TrackerException.FilenameInTrackerException e) {
-                    this.runner.sendMessage(new TrackMessage(TrackMessage.Type.RESPONSE, 201, Arrays.asList(e.getMessage())));
-                } catch (NodeException | NumberFormatException | TrackerControlException | FileException | TrackerException | BlockException e) {
-                    break;
+                    else if (req.isTarget(Type.REQUEST, 101, 0)) {
+                        System.out.println("Incoming disconnect from " + this.runner.getDestIP() + "!");
+                        this.control.disconnectNode(this.clientIp);
+                    }
+
+                    else {
+                        throw new MessageException("message-invalid");
+                    }
+
+                    this.runner.sendMessage(new TrackMessage(Type.RESPONSE, 0, res));
+
+                    if (req.isTarget(Type.REQUEST, 101, 0))
+                        this.runner.close();
+
+                } catch (FilenameInTrackerException e) {
+                    this.runner.sendMessage(new TrackMessage(Type.RESPONSE, 201, Arrays.asList(e.getMessage())));
+                } catch (TrackerException | NodeException | FileException | BlockException | MessageException e) {
+                    this.runner.close();
+                    this.control.disconnectNode(this.clientIp);
+                    System.out.println("Closing unsafe connection with socket " + this.runner.getDestIP() + "!");
                 }
-            } catch (IOException e) {
-                break;
             }
+
+        } catch (RunnerException e) {
+            System.out.println("Unexpected connection loss with socket " + this.runner.getDestIP() + "!");
         }
-
-
-        this.control.disconnectNode(this.runner.getDestIP());
-        this.runner.close();
     }
 }

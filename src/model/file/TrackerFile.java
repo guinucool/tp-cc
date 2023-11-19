@@ -181,16 +181,18 @@ public class TrackerFile extends FSFile {
         List<String> list = super.toStrings();
         list.add(blocksize + "");
 
+        StringBuilder builder = new StringBuilder();
+        String prefix = "";
+
         for (FSBlock block : this.blocks) {
-
             List<String> blocklist = block.toStrings();
-            StringBuilder builder = new StringBuilder();
-
-            builder.append(blocklist.get(0)).append(":");
+            builder.append(prefix).append(blocklist.get(0)).append(":");
             builder.append(String.join(",", blocklist.subList(1, blocklist.size() - 1)));
 
-            list.add(builder.toString());
+            prefix = ";";
         }
+
+        list.add(builder.toString());
 
         return list;
     }
