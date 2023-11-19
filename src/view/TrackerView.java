@@ -1,21 +1,22 @@
 package view;
 
-import message.*;
+import message.TrackMessage;
+import message.TrackMessage.Type;
+
 import model.tracker.Tracker;
 import model.tracker.TrackerException;
-import tracker.*;
 
 public class TrackerView {
 
     private Tracker tracker;
 
     /* Constructors */
-    public TrackerView(Tracker tracker) {
-        this.tracker = tracker;
+    public TrackerView() {
+        this.tracker = Tracker.getInstance();
     }
 
     /* View */
     public TrackMessage getFile(String filename) throws TrackerException {
-        return this.tracker.getFile(filename).toMessage();
+        return new TrackMessage(Type.RESPONSE, 200, this.tracker.getFile(filename).toStrings());
     }
 }

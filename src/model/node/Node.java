@@ -1,5 +1,9 @@
 package model.node;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Objeto que regista um node que possui ligação com o servidor.
  * 
@@ -81,12 +85,18 @@ public class Node {
         return builder.toString();
     }
 
-    /*public String toMessage() {
+    public List<String> toStrings() {
+        return new ArrayList<>(Arrays.asList(this.ip, this.port + ""));
+    }
 
-        StringBuilder builder = new StringBuilder();
+    public static Node fromStrings(String ip, String port) throws NodeException {
 
-        builder.append(this.ip).append(":").append(this.port);
+        try {
+            int nrport = Integer.parseInt(port);
+            return new Node(ip, nrport);
 
-        return builder.toString();
-    }*/
+        } catch (NumberFormatException e) {
+            throw new NodeException("port-invalid");
+        }
+    }
 }

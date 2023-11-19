@@ -1,6 +1,8 @@
 package controller;
 
-import client.*;
+import client.Client;
+import client.ClientException;
+import socket.RunnerException;
 
 public class ClientControl {
     
@@ -12,12 +14,16 @@ public class ClientControl {
     }
 
     /* Control */
-    public void registerClient() throws ClientException {
-        this.client.register();
-        this.client.updateServerFiles();
+    public void updateFiles() {
+        this.client.updateDirectory();
     }
 
-    public void updateFiles() throws ClientException {
-        this.client.
+    public void updateServer() throws ClientException, RunnerException {
+        this.client.updateDirectory();
+        this.client.sendUpdate();
+    }
+
+    public void sendDisconnect() throws ClientException, RunnerException {
+        this.client.sendDisconnect();
     }
 }

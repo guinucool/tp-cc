@@ -176,11 +176,30 @@ public class TrackerFile extends FSFile {
             block.removeNode(node);
     }
 
-    public static TrackerFile fromMessage(List<String> args) throws FileException {
+    public List<String> toStrings() {
+
+        List<String> list = super.toStrings();
+        list.add(blocksize + "");
+
+        for (FSBlock block : this.blocks) {
+
+            List<String> blocklist = block.toStrings();
+            StringBuilder builder = new StringBuilder();
+
+            builder.append(blocklist.get(0)).append(":");
+            builder.append(String.join(",", blocklist.subList(1, blocklist.size() - 1)));
+
+            list.add(builder.toString());
+        }
+
+        return list;
+    }
+
+    public static TrackerFile fromStrings(String hash, String filename, String size) throws FileException {
 
         try {
-            long size = Long.parseLong(args.get(2));
-            return new TrackerFile(args.get(0), args.get(1), size);
+            long bytesize = Long.parseLong(size);
+            return new TrackerFile(hash, filename, bytesize);
 
         } catch (NumberFormatException e) {
             throw new FileException("size-invalid");

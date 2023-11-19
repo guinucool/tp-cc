@@ -2,6 +2,7 @@ package model.file.block;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import model.node.Node;
 
@@ -96,16 +97,13 @@ public class FSBlock {
         return builder.toString();
     }
 
-    /*public String toMessage() {
+    public List<String> toStrings() {
 
-        StringBuilder builder = new StringBuilder();
-        String prefix = "";
+        List<String> list = new ArrayList<>(Arrays.asList(this.offset + ""));
 
-        for (Node node : this.nodes) {
-            builder.append(prefix).append(node.toMessage());
-            prefix = ",";
-        }
+        for (Node node : this.nodes)
+            list.add(String.join(":", node.toStrings()));
 
-        return builder.toString();
-    }*/
+        return list;
+    }
 }

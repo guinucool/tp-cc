@@ -1,5 +1,9 @@
 package model.file;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Objeto que regista, na generalidade dos casos, um ficheiro do sistema.
  * 
@@ -105,5 +109,9 @@ public abstract class FSFile {
         builder.append("size:").append(this.size).append(";");
 
         return builder.toString();
+    }
+
+    public List<String> toStrings() {
+        return new ArrayList<>(Arrays.asList(this.hash, this.name, this.size + ""));
     }
 }

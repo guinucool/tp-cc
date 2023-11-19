@@ -7,12 +7,6 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import message.TrackMessage;
-
 /**
  * Objeto que regista um ficheiro que um cliente possui na visão do próprio.
  * 
@@ -79,11 +73,6 @@ public class NodeFile extends FSFile {
         builder.append(super.toString());
 
         return builder.toString();
-    }
-
-    public TrackMessage toMessage() {
-        List<String> args = new ArrayList<>(Arrays.asList(super.getHash(), super.getName(), "" + super.getSize()));
-        return new TrackMessage(TrackMessage.Type.REQUEST, 200, args);
     }
 
     public static String filehash(File file) throws FileException {

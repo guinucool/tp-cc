@@ -1,10 +1,13 @@
 package client;
 
 import java.io.IOException;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
-
+import java.net.SocketException;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Enumeration;
 
 import message.TrackMessage;
 import message.TrackMessage.Type;
@@ -30,6 +33,7 @@ public class Client {
         try {
             Socket socket = new Socket(ip, 9090);
             this.runner = new ClientSocketRunner(socket);  
+            this.sendRegister();
         } catch (IOException e) {
             throw new ClientException("socket-failed");
         }
@@ -41,6 +45,7 @@ public class Client {
         try {
             Socket socket = new Socket(ip, port);
             this.runner = new ClientSocketRunner(socket);  
+            this.sendRegister();
         } catch (IOException e) {
             throw new ClientException("socket-failed");
         }
@@ -53,6 +58,26 @@ public class Client {
 
     public List<NodeFile> getFiles() {
         return this.directory.getFiles(false);
+    }
+
+    public String getIp() throws ClientException {
+
+        try {
+            String ip = "";
+            Enumeration<NetworkInterface> networkInterfaceEnumeration = NetworkInterface.getNetworkInterfaces();
+
+            while( networkInterfaceEnumeration.hasMoreElements()) {
+                for ( InterfaceAddress interfaceAddress : networkInterfaceEnumeration.nextElement().getInterfaceAddresses())
+                    if ( interfaceAddress.getAddress().isSiteLocalAddress())
+                        ip = interfaceAddress.getAddress().getHostAddress();
+            }
+
+            return ip;
+        
+        } catch (SocketException e) {
+            this.runner.close();
+            throw new ClientException("client-failed");
+        }
     }
 
     public String getSourceIP() {
@@ -90,9 +115,9 @@ public class Client {
         this.directory.readFiles();
     }
 
-    public void sendRegister() throws RunnerException, ClientException {
+    private void sendRegister() throws RunnerException, ClientException {
 
-        this.runner.sendMessage(new TrackMessage(Type.REQUEST, 100, Arrays.asList("9090")));
+        this.runner.sendMessage(new TrackMessage(Type.REQUEST, 100, Arrays.asList(this.getIp(), "9090")));
         TrackMessage res = this.runner.listenMessage();
 
         if (!res.isSucessResponse()) {
@@ -106,7 +131,7 @@ public class Client {
         List<NodeFile> files = this.directory.getFiles(true);
 
         for (NodeFile file : files) {
-            this.runner.sendMessage(file.toMessage());
+            this.runner.sendMessage(new TrackMessage(Type.REQUEST, 200, file.toStrings()));
             TrackMessage res = this.runner.listenMessage();
 
             if (res.isTarget(Type.RESPONSE, 201, 1))
