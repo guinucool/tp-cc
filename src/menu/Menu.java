@@ -57,11 +57,13 @@ public class Menu {
         if (!this.commands.containsKey(args.get(0))) {
             System.out.println("Invalid command! Type HELP to get more information...");
             this.readCommand();
+            return;
         }
 
         if (!this.commands.get(args.get(0)).validCommand(args)) {
             System.out.println("Invalid arguments! Type HELP to get more information...");
             this.readCommand();
+            return;
         }
 
         this.arguments = args;
