@@ -85,6 +85,9 @@ public class Directory {
 
                     if (!this.files.containsKey(nfile.getHash()))
                         this.files.put(nfile.getHash(), nfile);
+
+                    if (this.files.containsKey(nfile.getHash()))
+                        this.files.get(nfile.getHash()).setName(nfile.getName());
                 } catch (FileException e) {
                     /* Não é preciso tratar a exceção */
                 }
