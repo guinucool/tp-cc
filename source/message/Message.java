@@ -127,19 +127,20 @@ public abstract class Message {
         this.nrarguments = (short) payload.size();
 
         /* Criação do payload */
-        ByteArrayOutputStream barray = new ByteArrayOutputStream();
-        DataOutputStream stream = new DataOutputStream(barray);
+        try {
+            ByteArrayOutputStream barray = new ByteArrayOutputStream();
+            DataOutputStream stream = new DataOutputStream(barray);
 
-        for (byte[] data : payload) {
-            try {
+            for (byte[] data : payload) {
                 stream.writeInt(data.length);
                 stream.write(data.clone());
-            } catch (IOException e) {
-                throw new MessageException("payload-outofmemory");
             }
-        }
 
-        this.payload = barray.toByteArray();
+            stream.flush();
+            this.payload = barray.toByteArray();
+        } catch (IOException e) {
+            throw new MessageException("payload-outofmemory");
+        }
     }
 
     /* Descobre qual o tipo de operação de uma mensagem */
@@ -222,8 +223,14 @@ public abstract class Message {
 
         builder.append("(Message)operation:").append(this.operation).append(";");
         builder.append("flag:").append(this.flag).append(";");
-        builder.append("nrarguments").append(this.nrarguments).append(";");
-        builder.append("payload:").append(this.payload).append(";");
+        builder.append("nrarguments:").append(this.nrarguments).append(";");
+        builder.append("payload:");
+
+        for (byte b : this.payload) {
+            builder.append(" ").append(b);   
+        }
+
+        builder.append(";");
 
         return builder.toString();
     }
@@ -252,6 +259,8 @@ public abstract class Message {
             stream.writeShort(nrarguments);
             stream.writeInt(size);
             stream.write(payload);
+
+            stream.flush();
 
             return barray.toByteArray();
 
