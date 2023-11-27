@@ -1,6 +1,11 @@
 package message;
 
-import java.nio.ByteBuffer;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,17 +21,21 @@ public abstract class Message {
         RESPONSE
     }
 
+    public static final int HEADER_SIZE = Short.BYTES * 2;      /* Número de bytes do header */
+    public static final int FLAG_SIZE = Short.BYTES;            /* Número de bytes da flag */
+    public static final int QR_POSITION = (FLAG_SIZE * 8 - 1);  /* Posição bitwise da flag QR */
+
     private Operation operation;    /* Tipo de operação da mensagem */
     private short flag;             /* Flag de uma mensagem */
     private short nrarguments;      /* Número de argumentos de uma mensagem */
-    private List<byte[]> payload;   /* Payload de uma mensagem */
+    private byte[] payload;         /* Payload de uma mensagem */
 
     /* Construtor sem-argumento */
     public Message(Operation operation, short flag) throws MessageException {
         this.operation = operation;
         this.setFlag(flag);
         this.nrarguments = 0;
-        this.payload = new ArrayList<>();
+        this.payload = new byte[0];
     }
 
     /* Construtor uni-argumento */
@@ -34,8 +43,7 @@ public abstract class Message {
         this.operation = operation;
         this.setFlag(flag);
         this.nrarguments = 1;
-        this.payload = new ArrayList<>();
-        this.payload.add(payload.clone());
+        this.payload = payload.clone();
     }
 
     /* Construtor multi-argumento */
@@ -45,7 +53,59 @@ public abstract class Message {
         this.setPayload(payload);
     }
 
-    /* Definição e verificação da flag */
+    /* Construtor de cópia */
+    public Message(Message msg) {
+        this.operation = msg.operation;
+        this.flag = msg.flag;
+        this.nrarguments = msg.nrarguments;
+        this.payload = msg.payload.clone();
+    }
+
+    /** 
+     * Construtor binário
+     * 
+     * @throws MessageException no caso de a mensagem binária fornecida
+     * ter o formato errado.
+     */
+    public Message(byte[] data) throws MessageException {
+
+        ByteArrayInputStream barray = new ByteArrayInputStream(data);
+        DataInputStream stream = new DataInputStream(barray);
+
+        /* Conversão binária para mensagem */
+        try {
+            Operation operation = Operation.QUERY;
+            short flag = stream.readShort();
+            short nrarguments = stream.readShort();
+            int size = stream.readInt();
+
+            byte[] payload = new byte[size];
+            stream.read(payload);
+
+            /* Leitura da QR Flag */
+            if ((flag >> QR_POSITION & 1) == 1)
+                operation = Operation.RESPONSE;
+
+            /* Conversão da flag para o seu formato */
+            flag &= ~(1 << QR_POSITION);
+
+            /* Criação da mensagem */
+            this.operation = operation;
+            this.flag = flag;
+            this.nrarguments = nrarguments;
+            this.payload = payload;
+
+        } catch (IOException e) {
+            throw new MessageException("message-invalid");
+        }
+    }
+
+    /**
+     * Definição e verificação da flag
+     * 
+     * @throws MessageException no caso da flag da mensagem fornecida
+     * ser inválida (< 0).
+     */
     private void setFlag(short flag) throws MessageException {
         if (flag < 0)
             throw new MessageException("flag-invalid");
@@ -53,16 +113,33 @@ public abstract class Message {
         this.flag = flag;
     }
 
-    /* Definição e verificação de um payload multi-argumento */
+    /**
+     * Definição e verificação de um payload multi-argumento
+     * 
+     * @throws MessageException no caso de a lista de payload fornecida
+     * ser demasiado grande para o sistema ou no caso de o sistema
+     * ficar sem memória.
+     */
     private void setPayload(List<byte[]> payload) throws MessageException {
         if (payload.size() > Short.MAX_VALUE)
             throw new MessageException("payload-big");
         
         this.nrarguments = (short) payload.size();
-        this.payload = new ArrayList<>();
 
-        for (byte[] data : payload)
-            this.payload.add(data.clone());
+        /* Criação do payload */
+        ByteArrayOutputStream barray = new ByteArrayOutputStream();
+        DataOutputStream stream = new DataOutputStream(barray);
+
+        for (byte[] data : payload) {
+            try {
+                stream.writeInt(data.length);
+                stream.write(data.clone());
+            } catch (IOException e) {
+                throw new MessageException("payload-outofmemory");
+            }
+        }
+
+        this.payload = barray.toByteArray();
     }
 
     /* Descobre qual o tipo de operação de uma mensagem */
@@ -80,18 +157,60 @@ public abstract class Message {
         return this.nrarguments;
     }
 
-    /* Informação transportada pela mensagem */
-    public List<byte[]> getPayload() {
-        List<byte[]> data = new ArrayList<>();
+    public byte[] getPayload() {
+        return this.payload.clone();
+    }
 
-        for (byte[] paydata : this.payload)
-            data.add(paydata.clone());
+    /**
+     * Informação transportada pela mensagem
+     * 
+     * @throws MessageException no caso do payload não corresponder a uma lista binária
+     * válida.
+     */
+    public List<byte[]> getPayloadList() throws MessageException {
 
-        return data;
+        List<byte[]> payload = new ArrayList<>();
+
+        if (this.nrarguments == 1) {
+            payload.add(this.payload.clone());
+            return payload;
+        }
+
+        /* Descodificação para lista em caso de multi-argumento */
+        ByteArrayInputStream barray = new ByteArrayInputStream(this.payload.clone());
+        DataInputStream stream = new DataInputStream(barray);
+
+        for (int i = 0; i < this.nrarguments; i++) {
+            try {
+                int size = stream.readInt();
+
+                byte[] buf = new byte[size];
+                stream.read(buf);
+                payload.add(buf);
+            } catch (IOException e) {
+                throw new MessageException("payload-invalid");
+            }
+        }
+
+        return payload;
+    }
+
+    /* Tamanho do payload de uma mensagem */
+    public int getPayloadSize() {
+        return this.payload.length;
     }
 
     /* Decide quando duas mensagens são a mesma */
-    public abstract boolean equals(Message msg);
+    public boolean equals(Message msg) {
+
+        if (this == msg)
+            return true;
+
+        if ((msg == null) || (this.getClass() != msg.getClass()))
+            return false;
+
+        return (this.operation == msg.operation && this.flag == msg.flag && this.nrarguments == msg.nrarguments);
+    }
 
     /* Clona uma mensagem */
     public abstract Message clone();
@@ -103,15 +222,41 @@ public abstract class Message {
 
         builder.append("(Message)operation:").append(this.operation).append(";");
         builder.append("flag:").append(this.flag).append(";");
-        builder.append("payload:").append(this.payload.size()).append(";");
+        builder.append("nrarguments").append(this.nrarguments).append(";");
+        builder.append("payload:").append(this.payload).append(";");
 
         return builder.toString();
     }
 
-    public static void main(String[] args) {
+    /**
+     * Transformação do frame em binário
+     * 
+     * @throws MessageException no caso de não existir memória suficiente para
+     * alocar o frame em binário.
+     */
+    public byte[] toByte() throws MessageException {
 
-        byte[] buffer;
+        ByteArrayOutputStream barray = new ByteArrayOutputStream();
+        DataOutputStream stream = new DataOutputStream(barray);
 
-        ByteBuffer buf = ByteBuffer.wrap(buffer);
+        short flag = this.getFlag();
+        short nrarguments = this.getNrArguments();
+        int size = this.getPayloadSize();
+        byte[] payload = this.getPayload();
+
+        if (this.getOperation() == Operation.RESPONSE)
+            flag |= 1 << QR_POSITION;
+        
+        try {
+            stream.writeShort(flag);
+            stream.writeShort(nrarguments);
+            stream.writeInt(size);
+            stream.write(payload);
+
+            return barray.toByteArray();
+
+        } catch (IOException e) {
+            throw new MessageException("frame-outofmemory");
+        }
     }
 }

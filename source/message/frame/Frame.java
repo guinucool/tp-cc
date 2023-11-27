@@ -1,8 +1,5 @@
 package message.frame;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import message.Message;
@@ -25,11 +22,23 @@ public class Frame extends Message {
         super(operation, flag, payload);
     }
 
-    /* Transformação do frame em binário */
-    public byte[] toByte() {
+    /* Construtor de cópia */
+    public Frame(Frame frame) {
+        super(frame);
+    }
 
-        byte[] aaa = new byte[1000];
+    /* Construtor binário */
+    public Frame(byte[] data) throws MessageException {
+        super(data);
+    }
 
-        DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(aaa));
+    /* Decide quando duas mensagens são a mesma */
+    public boolean equals(Message msg) {
+        return super.equals(msg) && this.getPayload().equals(msg.getPayload());
+    }
+
+    /* Clona uma mensagem */
+    public Message clone() {
+        return new Frame(this);
     }
 }
