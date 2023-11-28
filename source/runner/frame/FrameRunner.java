@@ -144,4 +144,15 @@ public class FrameRunner extends Runner {
             this.read.unlock();
         }
     }
+
+    /* Conversão do frame runner para string */
+    public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("(Frame)").append(super.toString());
+        builder.append("socket:").append(this.socket.getLocalAddress()).append(":").append(this.socket.getLocalPort()).append(";");
+        builder.append("connected:").append(this.socket.getRemoteSocketAddress()).append(";");
+
+        return builder.toString();
+    }
 }

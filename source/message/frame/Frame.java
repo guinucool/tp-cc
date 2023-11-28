@@ -61,7 +61,7 @@ public class Frame extends Message {
 
         byte[] array = {b1, b2};
 
-        Frame frame = new Frame(Operation.QUERY, (short) 0, array);
+        Frame frame = new Frame(Operation.RESPONSE, (short) 0, array);
 
         System.out.println(frame.toString());
 
