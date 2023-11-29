@@ -33,7 +33,7 @@ import thread.SocketWorker;
  * @param lock
  *      Lock que bloqueia durante a aceitação de um novo socket, da leitura de propriedades do server ou do fecho do mesmo.
  */
-public class Server {
+public class ServerR {
     
     private ServerSocket listener;
     private List<SocketRunner> runners;

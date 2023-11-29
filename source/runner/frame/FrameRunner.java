@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import java.net.Socket;
+import java.net.SocketException;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -15,6 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import message.Message;
 import message.MessageException;
 import message.frame.Frame;
+
 import runner.Runner;
 import runner.RunnerException;
 
@@ -39,6 +42,10 @@ public class FrameRunner extends Runner {
      */
     public FrameRunner(Socket socket) throws RunnerException {
 
+        /* Verifica se o socket está aberto */
+        if (socket.isClosed())
+            throw new RunnerException("socket-disconnected");
+
         /* Abre o socket para o destino */
         this.socket = socket;
 
@@ -49,6 +56,34 @@ public class FrameRunner extends Runner {
         } catch (IOException e) {
             this.close();
             throw new RunnerException("runner-disconnected");
+        }
+    }
+
+    /* Endereço de alojamento local */
+    public String getAddress() {
+        
+        /* Bloqueia a operação de escrita */
+        this.read.lock();
+
+        /* Lê o endereço local que aloja o socket */
+        try {
+            return this.socket.getLocalAddress().toString();
+        } finally {
+            this.read.unlock();
+        }
+    }
+
+    /* Porta de alojamento local */
+    public int getPort() {
+
+        /* Bloqueia a operação de escrita */
+        this.read.lock();
+
+        /* Lê a porta local que aloja o socket */
+        try {
+            return this.socket.getPort();
+        } finally {
+            this.read.unlock();
         }
     }
 
@@ -74,6 +109,7 @@ public class FrameRunner extends Runner {
         try {
             this.writer.writeInt(packet.length);
             this.writer.write(packet);
+            this.writer.flush();
         } catch (IOException e) {
             this.close();
             throw new RunnerException("runner-disconnected");
@@ -85,11 +121,9 @@ public class FrameRunner extends Runner {
     /**
      * Receção de uma mensagem cuja origem é o socket ao qual está ligado
      * 
-     * @throws RunnerException no caso de a ligação entre sockets tiver sido perdida.
-     * @throws MessageException no caso de a criação da mensagem binária para envio for
-     * impossível.
+     * @throws RunnerException no caso de a ligação entre sockets tiver sido perdida ou for instável.
      */
-    public Message receive() throws RunnerException, MessageException {
+    public Message receive() throws RunnerException {
 
         /* Variável que irá conter a mensagem recebida */
         byte[] data;
@@ -101,7 +135,9 @@ public class FrameRunner extends Runner {
 
             data = new byte[size];
             this.reader.read(data);
-        } catch (Exception e) {
+        } catch (SocketException e) {
+            return null;
+        } catch (IOException e) {
             this.close();
             throw new RunnerException("runner-disconnected");
         } finally {
@@ -109,7 +145,12 @@ public class FrameRunner extends Runner {
         }
 
         /* Devolve a mensagem recebida */
-        return new Frame(data);
+        try {
+            return new Frame(data);
+        } catch (MessageException e) {
+            this.close();
+            throw new RunnerException("runner-unstable");
+        }
     }
 
     /* Fecho do socket no caso de o mesmo estar aberto */
@@ -149,6 +190,7 @@ public class FrameRunner extends Runner {
     public String toString() {
 
         StringBuilder builder = new StringBuilder();
+
         builder.append("(Frame)").append(super.toString());
         builder.append("socket:").append(this.socket.getLocalAddress()).append(":").append(this.socket.getLocalPort()).append(";");
         builder.append("connected:").append(this.socket.getRemoteSocketAddress()).append(";");

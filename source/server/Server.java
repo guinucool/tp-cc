@@ -1,14 +1,22 @@
 package server;
 
+/**
+ * Interface que define as regras de um servidor na generalidade.
+ */
 public interface Server {
 
-    public void getAddress();
+    /* Endereço em que o servidor se encontra a correr no momento */
+    public String getAddress();
 
-    public void getPort();
+    /* Porta que aloja o servidor */
+    public int getPort();
 
+    /* Audição por pedidos ou respostas ao servidor */
     public void listen();
 
-    public void close();
+    /* Para o funcionamento do servidor */
+    public void stop();
     
+    /* Verifica se o servidor está fechado */
     public boolean isClosed();
 }

@@ -22,11 +22,29 @@ public abstract class Runner {
         return this.id;
     }
 
-    /* Enviar uma mensagem através deste runner */
+    /* Endereço de alojamento local */
+    public abstract String getAddress();
+
+    /* Porta de alojamento local */
+    public abstract int getPort();
+
+    /**
+     * Enviar uma mensagem através deste runner
+     * 
+     * @throws RunnerException no caso de a conexão do socket ter sido desligada
+     * por instabilidades.
+     * @throws MessageException no caso do runner falhar na criação de uma
+     * mensagem.
+     */
     public abstract void send(Message msg) throws RunnerException, MessageException;
 
-    /* Receber uma mensagem através deste runner */
-    public abstract Message receive() throws RunnerException, MessageException;
+    /**
+     * Receber uma mensagem através deste runner
+     * 
+     * @throws RunnerException no caso de a conexão do socket ter sido desligada
+     * por instabilidades.
+     */
+    public abstract Message receive() throws RunnerException;
 
     /* Fecha o runner */
     public abstract void close();
