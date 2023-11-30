@@ -3,7 +3,7 @@ package message;
 /**
  * Interface que define quais as regras de um pedido de uma mensagem no geral.
  */
-public interface Request {
+public interface Requestable extends Communicable {
 
     /* Resolve um pedido para caso de sucesso */
     public void solve();

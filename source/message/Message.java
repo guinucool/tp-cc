@@ -13,7 +13,7 @@ import java.util.List;
  * Objeto que define uma mensagem que, na generalidade, pode ser usada para comunicação
  * entre diferentes máquinas.
  */
-public abstract class Message {
+public abstract class Message implements Communicable {
 
     /* Tipos de operação disponíveis */
     public enum Operation {
@@ -31,7 +31,7 @@ public abstract class Message {
     private byte[] payload;         /* Payload de uma mensagem */
 
     /* Construtor sem-argumento */
-    public Message(Operation operation, short flag) throws MessageException {
+    public Message(Operation operation, short flag) throws CommunicableException {
         this.operation = operation;
         this.setFlag(flag);
         this.nrarguments = 0;
@@ -39,7 +39,7 @@ public abstract class Message {
     }
 
     /* Construtor uni-argumento */
-    public Message(Operation operation, short flag, byte[] payload) throws MessageException {
+    public Message(Operation operation, short flag, byte[] payload) throws CommunicableException {
         this.operation = operation;
         this.setFlag(flag);
         this.nrarguments = 1;
@@ -47,7 +47,7 @@ public abstract class Message {
     }
 
     /* Construtor multi-argumento */
-    public Message(Operation operation, short flag, List<byte[]> payload) throws MessageException {
+    public Message(Operation operation, short flag, List<byte[]> payload) throws CommunicableException {
         this.operation = operation;
         this.setFlag(flag);
         this.setPayload(payload);
@@ -103,12 +103,12 @@ public abstract class Message {
     /**
      * Definição e verificação da flag
      * 
-     * @throws MessageException no caso da flag da mensagem fornecida
+     * @throws CommunicableException no caso da flag da mensagem fornecida
      * ser inválida (< 0).
      */
-    private void setFlag(short flag) throws MessageException {
+    private void setFlag(short flag) throws CommunicableException {
         if (flag < 0)
-            throw new MessageException("flag-invalid");
+            throw new CommunicableException("flag-invalid");
 
         this.flag = flag;
     }
@@ -116,13 +116,13 @@ public abstract class Message {
     /**
      * Definição e verificação de um payload multi-argumento
      * 
-     * @throws MessageException no caso de a lista de payload fornecida
+     * @throws CommunicableException no caso de a lista de payload fornecida
      * ser demasiado grande para o sistema ou no caso de o sistema
      * ficar sem memória.
      */
-    private void setPayload(List<byte[]> payload) throws MessageException {
+    private void setPayload(List<byte[]> payload) throws CommunicableException {
         if (payload.size() > Short.MAX_VALUE)
-            throw new MessageException("payload-big");
+            throw new CommunicableException("payload-big");
         
         this.nrarguments = (short) payload.size();
 
@@ -139,7 +139,7 @@ public abstract class Message {
             stream.flush();
             this.payload = barray.toByteArray();
         } catch (IOException e) {
-            throw new MessageException("payload-outofmemory");
+            throw new CommunicableException("payload-outofmemory");
         }
     }
 
@@ -158,6 +158,7 @@ public abstract class Message {
         return this.nrarguments;
     }
 
+    /* Payload completo de uma mensagem */
     public byte[] getPayload() {
         return this.payload.clone();
     }
@@ -241,7 +242,7 @@ public abstract class Message {
      * @throws MessageException no caso de não existir memória suficiente para
      * alocar o frame em binário.
      */
-    public byte[] toByte() throws MessageException {
+    public byte[] toCommunicable() throws CommunicableException {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
@@ -265,7 +266,7 @@ public abstract class Message {
             return barray.toByteArray();
 
         } catch (IOException e) {
-            throw new MessageException("frame-outofmemory");
+            throw new CommunicableException("frame-outofmemory");
         }
     }
 }

@@ -2,6 +2,7 @@ package message.frame;
 
 import java.util.List;
 
+import message.CommunicableException;
 import message.Message;
 import message.MessageException;
 
@@ -11,17 +12,17 @@ import message.MessageException;
 public class Frame extends Message {
 
     /* Construtor sem-argumento */
-    public Frame(Operation operation, short flag) throws MessageException {
+    public Frame(Operation operation, short flag) throws CommunicableException {
         super(operation, flag);
     }
 
     /* Construtor uni-argumento */
-    public Frame(Operation operation, short flag, byte[] payload) throws MessageException {
+    public Frame(Operation operation, short flag, byte[] payload) throws CommunicableException {
         super(operation, flag, payload);
     }
 
     /* Construtor multi-argumento */
-    public Frame(Operation operation, short flag, List<byte[]> payload) throws MessageException {
+    public Frame(Operation operation, short flag, List<byte[]> payload) throws CommunicableException {
         super(operation, flag, payload);
     }
 
@@ -65,7 +66,7 @@ public class Frame extends Message {
 
         System.out.println(frame.toString());
 
-        for (byte b : frame.toByte()) {
+        for (byte b : frame.toCommunicable()) {
             System.out.println(b);   
         }
     }

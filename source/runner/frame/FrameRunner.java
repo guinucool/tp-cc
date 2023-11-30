@@ -14,6 +14,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import message.Communicable;
+import message.CommunicableException;
 import message.Message;
 import message.MessageException;
 import message.frame.Frame;
@@ -94,15 +96,14 @@ public class FrameRunner extends Runner {
      * @throws MessageException no caso de a criação da mensagem binária para envio for
      * impossível.
      */
-    public void send(Message msg) throws RunnerException, MessageException {
+    public void send(Communicable msg) throws RunnerException, CommunicableException {
 
         /* Verifica se a mensagem pretendida é um frame */
         if (!(msg instanceof Frame))
             throw new RunnerException("message-invalid");
 
         /* Conversão da mensagem para frame binário */
-        Frame frame = (Frame) msg;
-        byte[] packet = frame.toByte();
+        byte[] packet = (byte[]) msg.toCommunicable();
 
         /* Envio da mensagem binária */
         this.send.lock();

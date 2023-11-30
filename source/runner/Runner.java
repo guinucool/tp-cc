@@ -1,5 +1,7 @@
 package runner;
 
+import message.Communicable;
+import message.CommunicableException;
 import message.Message;
 import message.MessageException;
 
@@ -36,7 +38,7 @@ public abstract class Runner {
      * @throws MessageException no caso do runner falhar na criação de uma
      * mensagem.
      */
-    public abstract void send(Message msg) throws RunnerException, MessageException;
+    public abstract void send(Communicable msg) throws RunnerException, CommunicableException;
 
     /**
      * Receber uma mensagem através deste runner
