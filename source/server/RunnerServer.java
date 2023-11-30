@@ -1,5 +1,6 @@
 package server;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,11 +27,12 @@ public class RunnerServer implements Server {
 
     /* Construtor argumentado */
     public RunnerServer(Runner runner, MessageWorker template) throws ServerException {
-        if (this.runner.isClosed())
+        if (runner.isClosed())
             throw new ServerException("runner-disconnected");
 
         this.runner = runner;
         this.template = template;
+        this.workers = new ArrayList<>();
     }
 
     /* Endereço local onde se encontra alojado o servidor */

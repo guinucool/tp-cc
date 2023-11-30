@@ -42,6 +42,6 @@ public class FrameWorker implements MessageWorker {
     }
 
     public void close(boolean stable) {
-
+        System.out.println(stable);
     }
 }
