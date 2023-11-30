@@ -8,6 +8,7 @@ import message.Message;
 import runner.Runner;
 import runner.RunnerException;
 import worker.MessageWorker;
+import worker.WorkerException;
 
 /**
  * Objeto que define um servidor que usa como base da sua audição um runner que recebe mensagens.
@@ -63,10 +64,13 @@ public class RunnerServer implements Server {
             }
 
             /* Operação da mensagem */
-            this.operate(income);
-            this.write.unlock();
+            try {
+                this.operate(income);
+            } finally {
+                this.write.unlock();
+            }
 
-        } catch (RunnerException e) {
+        } catch (RunnerException | WorkerException e) {
             this.stop();
             this.template.close(false);
         }
@@ -78,7 +82,7 @@ public class RunnerServer implements Server {
      * (É esperado que o tratamento de concorrência desta função seja tratado
      * nas funções que a utilizam)
      */
-    private void operate(Message message) {
+    private void operate(Message message) throws WorkerException {
         /* Caso o runner tenha sido propositadamente fechado */
         if (message == null) {
             this.stop();
@@ -119,5 +123,16 @@ public class RunnerServer implements Server {
     /* Verifica se o servidor está fechado */
     public boolean isClosed() {
         return this.runner.isClosed();
+    }
+
+    /* Conversão do runner server para string */
+    public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("(Runner)(Server)");
+        builder.append("runner:").append(this.runner.toString()).append(";");
+        
+        return builder.toString();
     }
 }

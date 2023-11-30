@@ -12,7 +12,7 @@ public interface Server {
     public int getPort();
 
     /* Audição por pedidos ou respostas ao servidor */
-    public void listen();
+    public void listen() throws ServerException;
 
     /* Para o funcionamento do servidor */
     public void stop();
