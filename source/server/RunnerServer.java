@@ -27,9 +27,12 @@ public class RunnerServer implements Server {
 
     /* Construtor argumentado */
     public RunnerServer(Runner runner, MessageWorker template) throws ServerException {
+
+        /* Verifica se o runner está aberto */
         if (runner.isClosed())
             throw new ServerException("runner-disconnected");
 
+        /* Associa as propriedades */
         this.runner = runner;
         this.template = template;
         this.workers = new ArrayList<>();

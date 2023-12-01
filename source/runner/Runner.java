@@ -3,7 +3,6 @@ package runner;
 import message.Communicable;
 import message.CommunicableException;
 import message.Message;
-import message.MessageException;
 
 /**
  * Objeto que define uma estrutura geral para um runner de mensagens (frame ou datagram).
@@ -35,7 +34,7 @@ public abstract class Runner {
      * 
      * @throws RunnerException no caso de a conexão do socket ter sido desligada
      * por instabilidades.
-     * @throws MessageException no caso do runner falhar na criação de uma
+     * @throws CommunicableException no caso do runner falhar na criação de uma
      * mensagem.
      */
     public abstract void send(Communicable msg) throws RunnerException, CommunicableException;

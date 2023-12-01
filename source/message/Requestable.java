@@ -9,7 +9,7 @@ public interface Requestable extends Communicable {
     public void solve();
 
     /* Resolve um pedido para caso de falhanço */
-    public void fail();
+    public void fail(Exception exception);
 
     /* Verifica se um pedido foi bem sucedido */
     public boolean isSolved();
@@ -21,4 +21,7 @@ public interface Requestable extends Communicable {
     public default boolean isResolved() {
         return (this.isSolved() || this.isFailed());
     }
+
+    /* Emite a exceção provocada pelo pedido */
+    public void exceptionThrow() throws Exception;
 }

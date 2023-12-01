@@ -93,7 +93,7 @@ public class FrameRunner extends Runner {
      * Envio de uma mensagem para o socket ao qual está ligado
      * 
      * @throws RunnerException no caso de a ligação entre sockets tiver sido perdida.
-     * @throws MessageException no caso de a criação da mensagem binária para envio for
+     * @throws CommunicableException no caso de a criação da mensagem binária para envio for
      * impossível.
      */
     public void send(Communicable msg) throws RunnerException, CommunicableException {
