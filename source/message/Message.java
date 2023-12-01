@@ -247,19 +247,16 @@ public abstract class Message implements Communicable {
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
 
-        short flag = this.getFlag();
-        short nrarguments = this.getNrArguments();
-        int size = this.getPayloadSize();
-        byte[] payload = this.getPayload();
+        short flag = this.flag;
 
         if (this.getOperation() == Operation.RESPONSE)
             flag |= 1 << QR_POSITION;
         
         try {
             stream.writeShort(flag);
-            stream.writeShort(nrarguments);
-            stream.writeInt(size);
-            stream.write(payload);
+            stream.writeShort(this.nrarguments);
+            stream.writeInt(this.getPayloadSize());
+            stream.write(this.getPayload());
 
             stream.flush();
 
