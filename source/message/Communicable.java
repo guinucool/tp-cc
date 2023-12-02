@@ -10,5 +10,5 @@ public interface Communicable {
     public Object toCommunicable() throws CommunicableException;
 
     /* Devolve o identificador uníco do comunicável */
-    public int getIdentifier();
+    public short getIdentifier();
 }

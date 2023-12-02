@@ -112,7 +112,7 @@ public class FrameRunner extends Runner {
             this.writer.write(packet);
             this.writer.flush();
         } catch (IOException e) {
-            this.close();
+            this.stop();
             throw new RunnerException("runner-disconnected");
         } finally {
             this.send.unlock();
@@ -159,6 +159,16 @@ public class FrameRunner extends Runner {
 
         /* Bloqueia o envio de futuras mensagens */
         this.send.lock();
+
+        /* Fecha o socket (caso ele esteja aberto) */
+        this.stop();
+        this.send.unlock();
+    }
+
+    /* Fecho do socket sem controlo de concorrência */
+    private void stop() {
+
+        /* Bloqueia a operação de leitura e escrita */
         this.write.lock();
 
         /* Fecha o socket (caso ele esteja aberto) */
@@ -169,7 +179,6 @@ public class FrameRunner extends Runner {
             /* Não é preciso tratar esta exceção */
         } finally {
             this.write.unlock();
-            this.send.unlock();
         }
     }
 

@@ -6,8 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import message.Requestable;
+import message.CommunicableException;
+import message.frame.FrameRequest;
 import runner.frame.FrameRunner;
+import tools.RequestException;
+import tools.RequestManager;
 
 /**
  * Objeto que define uma diretoria na visão de um node.
@@ -75,7 +78,7 @@ public class Directory {
         if (!this.files.containsKey(filename))
             throw new DirectoryException("filename-undefined");
 
-        return this.files.get(filename);
+        return (RegisterFile) this.files.get(filename).clone();
     }
 
     /* Devolve os vários ficheiros existentes na diretoria */
@@ -91,7 +94,7 @@ public class Directory {
     }
 
     /* Envia os vários ficheiros no node através do runner para o tracker */
-    public Requestable sendFiles(FrameRunner runner) throws DirectoryException {
+    public void sendFiles(RequestManager manager, FrameRunner runner) throws DirectoryException, FileException, CommunicableException, RequestException {
 
         /* Atualiza a diretoria */
         this.setFiles();
@@ -100,7 +103,13 @@ public class Directory {
         if (this.files.size() == 0)
             throw new DirectoryException("directory-empty");
 
-        return null;
+        List<byte[]> payload = new ArrayList<>();
+
+        for (RegisterFile file : this.files.values())
+            payload.add(file.getBytes());
+
+        FrameRequest request = new FrameRequest((short) 200, payload);
+        manager.sendSequentialRequest(runner, request);
     }
 
     /* Atualiza o estado de um ficheiro em específico */

@@ -175,7 +175,7 @@ public abstract class Message implements Communicable {
     }
 
     /* Descobre qual é o identificador da mensagem */
-    public int getIdentifier() {
+    public short getIdentifier() {
         return this.identifier;
     }
 
