@@ -108,7 +108,7 @@ public class TrackFile extends BlockFile {
 
         List<Block> blocklist = new ArrayList<Block>();
 
-        for(Block block: this.blocks.values())
+        for (Block block: this.blocks.values())
             blocklist.add((Block) block.clone());
 
         return blocklist;
