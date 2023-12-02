@@ -8,4 +8,7 @@ public interface Communicable {
 
     /* Transforma o comunicável num formato comunicável para o runner usado */
     public Object toCommunicable() throws CommunicableException;
+
+    /* Devolve o identificador uníco do comunicável */
+    public int getIdentifier();
 }

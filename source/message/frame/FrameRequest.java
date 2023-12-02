@@ -14,20 +14,20 @@ public class FrameRequest extends Frame implements Requestable {
     private Request request;            /* Váriaveis de controlo da resolução do pedido */
 
     /* Construtor sem-argumento */
-    public FrameRequest(Operation operation, short flag) throws CommunicableException {
-        super(operation, flag);
+    public FrameRequest(short flag) throws CommunicableException {
+        super(flag);
         this.request = new Request();
     }
 
     /* Construtor uni-argumento */
-    public FrameRequest(Operation operation, short flag, byte[] payload) throws CommunicableException {
-        super(operation, flag, payload);
+    public FrameRequest(short flag, byte[] payload) throws CommunicableException {
+        super(flag, payload);
         this.request = new Request();
     }
 
     /* Construtor multi-argumento */
-    public FrameRequest(Operation operation, short flag, List<byte[]> payload) throws CommunicableException {
-        super(operation, flag, payload);
+    public FrameRequest(short flag, List<byte[]> payload) throws CommunicableException {
+        super(flag, payload);
         this.request = new Request();
     }
 

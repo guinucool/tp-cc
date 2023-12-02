@@ -15,6 +15,8 @@ import java.util.List;
  */
 public abstract class Message implements Communicable {
 
+    private static short globalid = Short.MIN_VALUE;            /* Contador de identificador global */
+
     /* Tipos de operação disponíveis */
     public enum Operation {
         QUERY,
@@ -25,36 +27,67 @@ public abstract class Message implements Communicable {
     public static final int FLAG_SIZE = Short.BYTES;            /* Número de bytes da flag */
     public static final int QR_POSITION = (FLAG_SIZE * 8 - 1);  /* Posição bitwise da flag QR */
 
+    private short identifier;       /* Identificação da mensagem */
     private Operation operation;    /* Tipo de operação da mensagem */
     private short flag;             /* Flag de uma mensagem */
     private short nrarguments;      /* Número de argumentos de uma mensagem */
     private byte[] payload;         /* Payload de uma mensagem */
 
     /* Construtor sem-argumento */
-    public Message(Operation operation, short flag) throws CommunicableException {
-        this.operation = operation;
+    public Message(short flag) throws CommunicableException {
+        this.identifier = globalid++;
+        this.operation = Operation.QUERY;
+        this.setFlag(flag);
+        this.nrarguments = 0;
+        this.payload = new byte[0];
+    }
+
+    /* Construtor sem-argumento resposta */
+    public Message(short identifier, short flag) throws CommunicableException {
+        this.identifier = identifier;
+        this.operation = Operation.RESPONSE;
         this.setFlag(flag);
         this.nrarguments = 0;
         this.payload = new byte[0];
     }
 
     /* Construtor uni-argumento */
-    public Message(Operation operation, short flag, byte[] payload) throws CommunicableException {
-        this.operation = operation;
+    public Message(short flag, byte[] payload) throws CommunicableException {
+        this.identifier = globalid++;
+        this.operation = Operation.QUERY;
+        this.setFlag(flag);
+        this.nrarguments = 1;
+        this.payload = payload.clone();
+    }
+
+    /* Construtor uni-argumento resposta */
+    public Message(short identifier, short flag, byte[] payload) throws CommunicableException {
+        this.identifier = identifier;
+        this.operation = Operation.RESPONSE;
         this.setFlag(flag);
         this.nrarguments = 1;
         this.payload = payload.clone();
     }
 
     /* Construtor multi-argumento */
-    public Message(Operation operation, short flag, List<byte[]> payload) throws CommunicableException {
-        this.operation = operation;
+    public Message(short flag, List<byte[]> payload) throws CommunicableException {
+        this.identifier = globalid++;
+        this.operation = Operation.QUERY;
+        this.setFlag(flag);
+        this.setPayload(payload);
+    }
+
+    /* Construtor multi-argumento resposta */
+    public Message(short identifier, short flag, List<byte[]> payload) throws CommunicableException {
+        this.identifier = identifier;
+        this.operation = Operation.RESPONSE;
         this.setFlag(flag);
         this.setPayload(payload);
     }
 
     /* Construtor de cópia */
     public Message(Message msg) {
+        this.identifier = msg.identifier;
         this.operation = msg.operation;
         this.flag = msg.flag;
         this.nrarguments = msg.nrarguments;
@@ -74,26 +107,24 @@ public abstract class Message implements Communicable {
 
         /* Conversão binária para mensagem */
         try {
-            Operation operation = Operation.QUERY;
+            this.operation = Operation.QUERY;
+            this.identifier = stream.readShort();
             short flag = stream.readShort();
-            short nrarguments = stream.readShort();
+            this.nrarguments = stream.readShort();
             int size = stream.readInt();
 
-            byte[] payload = new byte[size];
-            stream.read(payload);
+            this.payload = new byte[size];
+            stream.read(this.payload);
 
             /* Leitura da QR Flag */
             if ((flag >> QR_POSITION & 1) == 1)
-                operation = Operation.RESPONSE;
+                this.operation = Operation.RESPONSE;
 
             /* Conversão da flag para o seu formato */
             flag &= ~(1 << QR_POSITION);
 
             /* Criação da mensagem */
-            this.operation = operation;
             this.flag = flag;
-            this.nrarguments = nrarguments;
-            this.payload = payload;
 
         } catch (IOException e) {
             throw new MessageException("message-invalid");
@@ -141,6 +172,11 @@ public abstract class Message implements Communicable {
         } catch (IOException e) {
             throw new CommunicableException("payload-outofmemory");
         }
+    }
+
+    /* Descobre qual é o identificador da mensagem */
+    public int getIdentifier() {
+        return this.identifier;
     }
 
     /* Descobre qual o tipo de operação de uma mensagem */
@@ -211,7 +247,8 @@ public abstract class Message implements Communicable {
         if ((msg == null) || (this.getClass() != msg.getClass()))
             return false;
 
-        return (this.operation == msg.operation && this.flag == msg.flag && this.nrarguments == msg.nrarguments);
+        return (this.identifier == msg.identifier && this.operation == msg.operation && this.flag == msg.flag
+                && this.nrarguments == msg.nrarguments);
     }
 
     /* Clona uma mensagem */
@@ -222,7 +259,8 @@ public abstract class Message implements Communicable {
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append("(Message)operation:").append(this.operation).append(";");
+        builder.append("(Message)identifier:").append(this.identifier).append(";");
+        builder.append("operation:").append(this.operation).append(";");
         builder.append("flag:").append(this.flag).append(";");
         builder.append("nrarguments:").append(this.nrarguments).append(";");
         builder.append("payload:");
@@ -253,6 +291,7 @@ public abstract class Message implements Communicable {
             flag |= 1 << QR_POSITION;
         
         try {
+            stream.writeShort(this.identifier);
             stream.writeShort(flag);
             stream.writeShort(this.nrarguments);
             stream.writeInt(this.getPayloadSize());

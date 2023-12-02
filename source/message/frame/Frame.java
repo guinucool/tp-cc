@@ -12,18 +12,33 @@ import message.MessageException;
 public class Frame extends Message {
 
     /* Construtor sem-argumento */
-    public Frame(Operation operation, short flag) throws CommunicableException {
-        super(operation, flag);
+    public Frame(short flag) throws CommunicableException {
+        super(flag);
+    }
+
+    /* Construtor sem-argumento resposta */
+    public Frame(short identifier, short flag) throws CommunicableException {
+        super(identifier, flag);
     }
 
     /* Construtor uni-argumento */
-    public Frame(Operation operation, short flag, byte[] payload) throws CommunicableException {
-        super(operation, flag, payload);
+    public Frame(short flag, byte[] payload) throws CommunicableException {
+        super(flag, payload);
+    }
+
+    /* Construtor uni-argumento resposta */
+    public Frame(short identifier, short flag, byte[] payload) throws CommunicableException {
+        super(identifier, flag, payload);
     }
 
     /* Construtor multi-argumento */
-    public Frame(Operation operation, short flag, List<byte[]> payload) throws CommunicableException {
-        super(operation, flag, payload);
+    public Frame(short flag, List<byte[]> payload) throws CommunicableException {
+        super(flag, payload);
+    }
+
+    /* Construtor multi-argumento resposta */
+    public Frame(short identifier, short flag, List<byte[]> payload) throws CommunicableException {
+        super(identifier, flag, payload);
     }
 
     /* Construtor de cópia */
@@ -53,21 +68,5 @@ public class Frame extends Message {
         builder.append("(Frame)").append(super.toString());
 
         return builder.toString();
-    }
-
-    public static void main(String[] args) throws MessageException {
-
-        byte b1 = 10;
-        byte b2 = 20;
-
-        byte[] array = {b1, b2};
-
-        Frame frame = new Frame(Operation.RESPONSE, (short) 0, array);
-
-        System.out.println(frame.toString());
-
-        for (byte b : frame.toCommunicable()) {
-            System.out.println(b);   
-        }
     }
 }
