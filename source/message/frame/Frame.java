@@ -15,9 +15,9 @@ import message.Message;
  */
 public class Frame extends Message {
 
-    public static final int HEADER_SIZE = IDENTIFIER_SIZE + Short.BYTES * 2;    /* Tamanho do header do frame */
-    public static final int FLAG_SIZE = Short.BYTES;                            /* Número de bytes da flag */
-    public static final int QR_POSITION = (FLAG_SIZE * 8 - 1);                  /* Posição bitwise da flag QR */
+    public static final int HEADER_SIZE = IDENTIFIER_SIZE + Short.BYTES * 2 + Integer.BYTES;    /* Tamanho do header do frame */
+    public static final int FLAG_SIZE = Short.BYTES;                                            /* Número de bytes da flag */
+    public static final int QR_POSITION = (FLAG_SIZE * 8 - 1);                                  /* Posição bitwise da flag QR */
 
     private Operation operation;    /* Tipo de operação da mensagem */
     private short flag;             /* Flag de uma mensagem */
