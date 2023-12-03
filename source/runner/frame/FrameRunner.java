@@ -147,7 +147,7 @@ public class FrameRunner extends Runner {
 
         /* Devolve a mensagem recebida */
         try {
-            return new Frame(data);
+            return Frame.fromCommunicable(data);
         } catch (MessageException e) {
             this.close();
             throw new RunnerException("runner-unstable");
