@@ -17,7 +17,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import message.Communicable;
 import message.CommunicableException;
 import message.Message;
-import message.MessageException;
 import message.frame.Frame;
 
 import runner.Runner;
@@ -148,7 +147,7 @@ public class FrameRunner extends Runner {
         /* Devolve a mensagem recebida */
         try {
             return Frame.fromCommunicable(data);
-        } catch (MessageException e) {
+        } catch (CommunicableException e) {
             this.close();
             throw new RunnerException("runner-unstable");
         }

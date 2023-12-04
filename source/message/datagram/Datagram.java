@@ -1,25 +1,32 @@
 package message.datagram;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.CRC32;
 
 import message.CommunicableException;
 import message.Message;
-import message.MessageException;
-import message.frame.Frame;
 import model.Node;
+import model.NodeException;
 
 public class Datagram extends Message {
 
-    public final int HEADER_SIZE = Message.IDENTIFIER_SIZE + Short.BYTES * 2 + Integer.BYTES * 4;   /* Tamanho do header do datagrama */
-    public static final int FLAG_SIZE = Short.BYTES;                                                /* Número de bytes da flag */
-    public static final int QR_POSITION = (FLAG_SIZE * 8 - 1);                                      /* Posição bitwise da flag QR */
-    public final int MAX_PACKET = 1500;                                                             /* Tamanho máximo do datagrama */
-    public final int MAX_PAYLOAD = MAX_PACKET - HEADER_SIZE;                                        /* Tamanho máximo do payload */
+    public static final int HEADER_SIZE = Message.IDENTIFIER_SIZE + Short.BYTES * 2 + Integer.BYTES * 4;    /* Tamanho do header do datagrama */
+    public static final int FLAG_SIZE = Short.BYTES;                                                        /* Número de bytes da flag */
+    public static final int QR_POSITION = (FLAG_SIZE * 8 - 1);                                              /* Posição bitwise da flag QR */
+    public static final int NA_POSITION = (FLAG_SIZE * 8 - 2);                                              /* Posição bitwise da flag NA */
+    public static final int IA_POSITION = (FLAG_SIZE * 8 - 3);                                              /* Posição bitwise da flag IA */
+    public static final int IF_POSITION = (FLAG_SIZE * 8 - 4);                                              /* Posição bitwise da flag IF */
+    public static final int MAX_PACKET = 1500;                                                              /* Tamanho máximo do datagrama */
+    public static final int MAX_PAYLOAD = MAX_PACKET - HEADER_SIZE;                                         /* Tamanho máximo do payload */
 
     private Operation operation;    /* Tipo de operação da mensagem */
     private short flag;             /* Flag de uma mensagem */
@@ -195,13 +202,38 @@ public class Datagram extends Message {
         this.destroyPayload();
     }
 
+    /* Define a mensagem como placeholder */
+    private void setPlaceholder() {
+
+        /* Remove a necessidade de ack */
+        this.needsAck = false;
+
+        /* Armazena o atual payload */
+        byte[] fragment = this.payload.clone();
+
+        /* Cria um novo payload */
+        this.payload = new byte[this.totalSize];
+        this.totalSize -= fragment.length;
+        
+        /* Junta o fragmento já existente */
+        this.joinPayload(fragment, fragmentOffset);
+        this.fragmentOffset = 0;
+    }
+
+    /* Junta um fragmento ao payload */
+    private void joinPayload(byte[] fragment, int offset) {
+        for (int i = 0; i < fragment.length; i++)
+            this.payload[offset + i] = fragment[i];
+    }
+
     /* Destroí o payload para fins de controlo e verificação */
     public void destroyPayload() {
         this.payload = new byte[0];
     }
 
-    public int getChecksum() {
-
+    /* Descobre qual a checksum para o pacote datagrama */
+    public int getChecksum() throws CommunicableException {
+        return crc32checksum(this.getBytes());
     }
 
     /* Descobre qual o tipo de operação de uma mensagem */
@@ -254,8 +286,45 @@ public class Datagram extends Message {
         return (Node) this.node.clone();
     }
 
-    private byte[] getBytes() {
+    /* Converte o datagrama em formato binário */
+    private byte[] getBytes() throws CommunicableException {
 
+        ByteArrayOutputStream barray = new ByteArrayOutputStream();
+        DataOutputStream stream = new DataOutputStream(barray);
+
+        /* Converte a flag e as flags necessárias para o datagrama */
+        short flag = this.flag;
+
+        if (this.operation == Operation.RESPONSE)
+            flag |= 1 << QR_POSITION;
+
+        if (this.needsAck)
+            flag |= 1 << NA_POSITION;
+
+        if (this.isAck)
+            flag |= 1 << IA_POSITION;
+
+        if (this.isFragmented)
+            flag |= 1 << IF_POSITION;
+        
+        /* Converte o datagrama para binário */
+        try {
+            
+            stream.writeShort(this.getIdentifier());
+            stream.writeShort(flag);
+            stream.writeInt(this.fragmentOffset);
+            stream.writeInt(this.totalSize);
+            stream.writeShort(this.nrarguments);
+            stream.writeShort((short) this.payload.length);
+            stream.write(this.getPayload());
+
+            stream.flush();
+
+            return barray.toByteArray();
+
+        } catch (IOException e) {
+            throw new CommunicableException("datagram-outofmemory");
+        }
     }
 
     /* Cria um ack para uma mensagem, caso seja necessário */
@@ -293,11 +362,11 @@ public class Datagram extends Message {
     }
 
     /* Fragmenta uma mensagem */
-    public List<Datagram> fragment() throws MessageException {
+    public List<Datagram> fragment() throws CommunicableException {
 
         /* Verifica se há necessidade de fragmentar a mensagem */
         if (this.getPayloadSize() <= MAX_PAYLOAD)
-            throw new MessageException("fragmentation-unnecessary");
+            throw new CommunicableException("fragmentation-unnecessary");
 
         /* Calcula o payload para fragmentar */
         byte[] payload = this.getPayload();
@@ -313,7 +382,7 @@ public class Datagram extends Message {
             if (payload.length - i < MAX_PAYLOAD)
                 size = payload.length - i;
 
-            Datagram fragment = new Datagram(this.getIdentifier(), this.operation, this.flag, this.nrarguments, Arrays.copyOfRange(payload, i, size), true, false, true, payload.length, i, this.node);
+            Datagram fragment = new Datagram(this.getIdentifier(), this.operation, this.flag, this.nrarguments, Arrays.copyOfRange(payload, i, i + size), true, false, true, payload.length, i, this.node);
             fragments.add(fragment);
         }
 
@@ -321,16 +390,38 @@ public class Datagram extends Message {
         return fragments;
     }
 
-    public Datagram placeholder() {
+    public Datagram placeholder() throws CommunicableException {
         
+        /* Verifica se o datagrama está fragementado */
+        if (!this.isFragmented())
+            throw new CommunicableException("datagram-unfragmented");
+
         /* Cria o placeholder */
         Datagram placeholder = this.clone();
-        placeholder.fragmentOffset = 0;
-        placeholder.totalSize -= this.getPayloadSize();
+        placeholder.setPlaceholder();
+
+        return placeholder;
     }
 
-    public void join(Datagram fragment) {
+    public void join(Datagram fragment) throws CommunicableException {
 
+        /* Verifica se o datagrama está fragmentado */
+        if (!this.isFragmented() || !fragment.isFragmented())
+            throw new CommunicableException("datagram-unfragmented");
+
+        /* Verifica se o fragmento faz parte deste todo */
+        if (this.getIdentifier() != fragment.getIdentifier() || this.getOperation() != fragment.getOperation() || this.getFlag() != fragment.getFlag() || this.getNrArguments() != fragment.getNrArguments() || !this.getNode().equals(fragment.getNode()))
+            throw new CommunicableException("datagram-different");
+
+        /* Junta o fragmento */
+        this.joinPayload(fragment.getPayload(), fragment.getFragmentOffset());
+        this.totalSize -= fragment.getPayloadSize();
+
+        /* Completa a fragmentação, caso seja necessário */
+        if (this.totalSize == 0) {
+            this.totalSize = this.getPayloadSize();
+            this.isFragmented = false;
+        }
     }
 
     /* Decide quando duas mensagens são a mesma */
@@ -341,7 +432,7 @@ public class Datagram extends Message {
                 && this.nrarguments == datagram.nrarguments && this.needsAck == datagram.needsAck
                 && this.isAck == datagram.isAck && this.isFragmented == datagram.isFragmented
                 && this.totalSize == datagram.totalSize && this.fragmentOffset == datagram.fragmentOffset
-                && this.node.equals(node);
+                && this.node.equals(datagram.node);
     }
 
     /* Clona uma mensagem */
@@ -375,33 +466,111 @@ public class Datagram extends Message {
         return builder.toString();
     }
 
-    public byte[] toCommunicable() throws CommunicableException {
+    /**
+     * Transformação do datagrama em binário
+     * 
+     * @throws CommunicableException no caso de não existir memória suficiente para
+     * alocar o datagrama em binário.
+     */
+    public DatagramPacket toCommunicable() throws CommunicableException {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
-
-        short flag = this.flag;
-
-        if (this.getOperation() == Operation.RESPONSE)
-            flag |= 1 << QR_POSITION;
         
+        /* Converte o datagrama para binário */
         try {
-            stream.writeShort(this.identifier);
-            stream.writeShort(flag);
-            stream.writeShort(this.nrarguments);
-            stream.writeInt(this.getPayloadSize());
-            stream.write(this.getPayload());
+            
+            stream.writeInt(this.getChecksum());
+            stream.write(this.getBytes());
 
             stream.flush();
 
-            return barray.toByteArray();
+            byte[] payload = barray.toByteArray();
+
+            return new DatagramPacket(payload, payload.length, InetAddress.getByName(this.node.getAddress()), this.node.getPort());
 
         } catch (IOException e) {
-            throw new CommunicableException("frame-outofmemory");
+            throw new CommunicableException("datagram-outofmemory");
         }
     }
 
-    public static int crc32checksum() {
+    /**
+     * Transformação binária em datagrama
+     * 
+     * @throws CommunicableException no caso do objeto binário fornecido não ser um
+     * datagrama válido.
+     * @throws NodeException no caso do pacote fornecido ter uma ligação inválida.
+     */
+    public static Datagram fromCommunicable(DatagramPacket packet) throws CommunicableException, NodeException {
 
+        ByteArrayInputStream barray = new ByteArrayInputStream(packet.getData());
+        DataInputStream stream = new DataInputStream(barray);
+
+        /* Conversão binária para mensagem */
+        try {
+
+            int checksum = stream.readInt();
+
+            Operation operation = Operation.QUERY;
+            boolean needsAck = false;
+            boolean isAck = false;
+            boolean isFragmented = false;
+            short identifier = stream.readShort();
+            short flag = stream.readShort();
+            int fragmentOffset = stream.readInt();
+            int totalSize = stream.readInt();
+            short nrarguments = stream.readShort();
+            int size = stream.readShort();
+
+            byte[] payload = new byte[size];
+            stream.read(payload);
+
+            /* Leitura da QR Flag */
+            if ((flag >> QR_POSITION & 1) == 1)
+                operation = Operation.RESPONSE;
+
+            /* Leitura da NA Flag */
+            if ((flag >> NA_POSITION & 1) == 1)
+                needsAck = true;
+
+            /* Leitura da IA Flag */
+            if ((flag >> IA_POSITION & 1) == 1)
+                isAck = true;
+
+            /* Leitura da IF Flag */
+            if ((flag >> IF_POSITION & 1) == 1)
+                isFragmented = true;
+
+            /* Conversão da flag para o seu formato */
+            flag &= ~(1 << QR_POSITION);
+            flag &= ~(1 << NA_POSITION);
+            flag &= ~(1 << IA_POSITION);
+            flag &= ~(1 << IF_POSITION);
+
+            /* Criação do node */
+            Node node = new Node(packet.getAddress().getHostAddress(), packet.getPort());
+
+            /* Criação da mensagem */
+            Datagram result = new Datagram(identifier, operation, flag, nrarguments, payload, needsAck, isAck, isFragmented, totalSize, fragmentOffset, node);
+
+            if (result.getChecksum() != checksum)
+                throw new CommunicableException("message-corrupted");
+
+            return result;
+
+        } catch (IOException e) {
+            throw new CommunicableException("message-invalid");
+        }
+    }
+
+    /* Cria uma checksum CRC-32 para a informação binária fornecida */
+    public static int crc32checksum(byte[] data) {
+
+        /* Cria um codificador CRC-32 */
+        CRC32 crc = new CRC32();
+
+        /* Cria uma checksum CRC-32 para o pacote */
+        crc.update(data);
+        return (int) crc.getValue();
     }
 }
