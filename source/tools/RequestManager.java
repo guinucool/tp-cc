@@ -27,6 +27,11 @@ public class RequestManager {
         this.requestWait = waiter;    
     }
 
+    /* Verifica se existe um pedido com o id pretendido */
+    public boolean hasRequest(short identifier) {
+        return this.requests.containsKey(identifier);
+    }
+
     /* Adiciona uma mensagem de pedido ao cliente */
     private void addRequest(Requestable request) throws RequestException {
 

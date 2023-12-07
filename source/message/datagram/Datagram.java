@@ -19,7 +19,7 @@ import model.NodeException;
 
 public class Datagram extends Message {
 
-    public static final int HEADER_SIZE = Message.IDENTIFIER_SIZE + Short.BYTES * 2 + Integer.BYTES * 4;    /* Tamanho do header do datagrama */
+    public static final int HEADER_SIZE = Message.IDENTIFIER_SIZE + Short.BYTES * 3 + Integer.BYTES * 3;    /* Tamanho do header do datagrama */
     public static final int FLAG_SIZE = Short.BYTES;                                                        /* Número de bytes da flag */
     public static final int QR_POSITION = (FLAG_SIZE * 8 - 1);                                              /* Posição bitwise da flag QR */
     public static final int NA_POSITION = (FLAG_SIZE * 8 - 2);                                              /* Posição bitwise da flag NA */
@@ -199,6 +199,7 @@ public class Datagram extends Message {
     /* Define a mensagem como ack */
     private void setAck() {
         this.isAck = true;
+        this.needsAck = false;
         this.destroyPayload();
     }
 
@@ -349,13 +350,13 @@ public class Datagram extends Message {
         if (this.needsAck() && ack.isAck())
             return (this.getIdentifier() == ack.getIdentifier() && this.operation == ack.operation
                     && this.flag == ack.flag && this.nrarguments == ack.nrarguments
-                    && this.needsAck == ack.needsAck && this.isFragmented == ack.isFragmented 
+                    && this.isFragmented == ack.isFragmented 
                     && this.totalSize == ack.totalSize && this.fragmentOffset == ack.fragmentOffset
                     && this.node.equals(ack.node));
 
         /* Verifica se é um ack de query */
         if (this.getOperation() == Operation.QUERY)
-            return (this.getIdentifier() == ack.getIdentifier() && ack.operation == Operation.RESPONSE && this.node.equals(ack.node));
+            return (this.getIdentifier() == ack.getIdentifier() && ack.operation == Operation.RESPONSE && this.node.equals(ack.node) && !ack.isFragmented);
 
         /* Se não é nenhum dos casos */
         return false;

@@ -36,6 +36,11 @@ public class Timeout<T> {
         this.timeout--;
     }
 
+    /* Reseta o timeout */
+    public void reset() {
+        this.timeout = 0;
+    }
+
     /* Verifica se o elemento expirou */
     public boolean hasExpired() {
         return this.timeout >= this.maxTimeout;
