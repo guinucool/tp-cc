@@ -76,6 +76,15 @@ public class RequestManager {
         this.requestWait.signalAll();
     }
 
+    /* Procura e remove por pedidos que já estajam resolvidos */
+    public void updateAllRequest(RunnerException e) {
+
+        /* Verifica todos os pedidos existentes */
+        for (Short identifier : this.requests.keySet())
+            if (this.requests.get(identifier).isResolved())
+                this.requests.remove(identifier);
+    }
+
     /* Envia um pedido através de um runner */
     public void sendSequentialRequest(Runner runner, Requestable request) throws CommunicableException, RequestException {
 

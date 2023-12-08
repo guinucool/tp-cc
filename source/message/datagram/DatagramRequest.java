@@ -1,7 +1,5 @@
 package message.datagram;
 
-import java.util.List;
-
 import message.CommunicableException;
 import message.Requestable;
 import model.Node;
@@ -22,12 +20,6 @@ public class DatagramRequest extends Datagram implements Requestable {
 
     /* Construtor uni-argumento */
     public DatagramRequest(short flag, byte[] payload, Node node) throws CommunicableException {
-        super(flag, payload, node);
-        this.request = new Request();
-    }
-
-    /* Construtor multi-argumento */
-    public DatagramRequest(short flag, List<byte[]> payload, Node node) throws CommunicableException {
         super(flag, payload, node);
         this.request = new Request();
     }

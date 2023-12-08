@@ -13,6 +13,7 @@ import java.io.IOException;
 public abstract class BlockFile extends FSFile {
     
     public final int MAX_BLOCK = 8192;          /* Número máximo de blocos possível */
+    public final int MAX_SIZE = 262144;         /* Tamanho máximo de bloco possível */
 
     private int blocksize;          /* Tamanho de bloco definido para o ficheiro */
 
@@ -79,7 +80,7 @@ public abstract class BlockFile extends FSFile {
         int blocksize = 1;
 	    long num = Long.MAX_VALUE;
 
-	    while(num > max) {
+	    while(num > max && blocksize < MAX_SIZE * 2) {
 
 	        num = this.getSize() / blocksize;
 

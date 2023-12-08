@@ -6,13 +6,11 @@ package tools;
 public class Timeout<T> {
 
     private T object;           /* Objeto no qual se pretende implementar um timeout */
-    private int maxTimeout;     /* Máximo do timeout */
     private int timeout;        /* Timeout atual */
 
     /* Construtor parametrizado */
-    public Timeout(T object, int maxTimeout) {
+    public Timeout(T object) {
         this.object = object;
-        this.maxTimeout = maxTimeout;
         this.timeout = 0;
     }
 
@@ -42,8 +40,8 @@ public class Timeout<T> {
     }
 
     /* Verifica se o elemento expirou */
-    public boolean hasExpired() {
-        return this.timeout >= this.maxTimeout;
+    public boolean hasExpired(int maxTimeout) {
+        return this.timeout >= maxTimeout;
     }
 
     /* Converte o par para formato string */
@@ -53,7 +51,6 @@ public class Timeout<T> {
 
         builder.append("(Timeout)");
         builder.append("object:").append(this.object.toString()).append(";");
-        builder.append("maxTimeout:").append(this.maxTimeout).append(";");
         builder.append("timeout:").append(this.timeout).append(";");
 
         return builder.toString();

@@ -19,7 +19,7 @@ import model.NodeException;
 
 public class Datagram extends Message {
 
-    public static final int HEADER_SIZE = Message.IDENTIFIER_SIZE + Short.BYTES * 3 + Integer.BYTES * 3;    /* Tamanho do header do datagrama */
+    public static final int HEADER_SIZE = Message.IDENTIFIER_SIZE + Short.BYTES * 2 + Integer.BYTES * 3;    /* Tamanho do header do datagrama */
     public static final int FLAG_SIZE = Short.BYTES;                                                        /* Número de bytes da flag */
     public static final int QR_POSITION = (FLAG_SIZE * 8 - 1);                                              /* Posição bitwise da flag QR */
     public static final int NA_POSITION = (FLAG_SIZE * 8 - 2);                                              /* Posição bitwise da flag NA */
@@ -30,7 +30,6 @@ public class Datagram extends Message {
 
     private Operation operation;    /* Tipo de operação da mensagem */
     private short flag;             /* Flag de uma mensagem */
-    private short nrarguments;      /* Número de argumentos de uma mensagem */
     private byte[] payload;         /* Payload de uma mensagem */
     private boolean needsAck;       /* Verifica se a mensagem precisa de ack */
     private boolean isAck;          /* Verifica se a mensagem é um ack */
@@ -67,26 +66,11 @@ public class Datagram extends Message {
         this.setDatagram(flag, payload, node);
     }
 
-    /* Construtor multi-argumento */
-    public Datagram(short flag, List<byte[]> payload, Node node) throws CommunicableException {
-        super();
-        this.operation = Operation.QUERY;
-        this.setDatagram(flag, payload, node);
-    }
-
-    /* Construtor multi-argumento resposta */
-    public Datagram(short identifier, short flag, List<byte[]> payload, Node node) throws CommunicableException {
-        super(identifier);
-        this.operation = Operation.RESPONSE;
-        this.setDatagram(flag, payload, node);
-    }
-
     /* Construtor de cópia */
     public Datagram(Datagram datagram) {
         super(datagram);
         this.operation = datagram.operation;
         this.flag = datagram.flag;
-        this.nrarguments = datagram.nrarguments;
         this.payload = datagram.payload.clone();
         this.needsAck = datagram.needsAck;
         this.isAck = datagram.isAck;
@@ -97,11 +81,10 @@ public class Datagram extends Message {
     }
 
     /* Construtor livre */
-    private Datagram(short identifier, Operation operation, short flag, short nrarguments, byte[] payload, boolean needsAck, boolean isAck, boolean isFragmented, int totalSize, int fragmentOffset, Node node) {
+    private Datagram(short identifier, Operation operation, short flag, byte[] payload, boolean needsAck, boolean isAck, boolean isFragmented, int totalSize, int fragmentOffset, Node node) {
         super(identifier);
         this.operation = operation;
         this.flag = flag;
-        this.nrarguments = nrarguments;
         this.payload = payload.clone();
         this.needsAck = needsAck;
         this.isAck = isAck;
@@ -127,22 +110,6 @@ public class Datagram extends Message {
     }
 
     /**
-     * Definição e verificação do payload através de uma lista
-     * 
-     * @throws CommunicableException no caso da lista de bytes fornecida ser
-     * grande demais para a mensagem.
-     */
-    private void setPayload(List<byte[]> payload) throws CommunicableException {
-
-        /* Verifica se o tamanho da lista é aceitável */
-        if (payload.size() > Short.MAX_VALUE)
-            throw new CommunicableException("payload-big");
-        
-        this.nrarguments = (short) payload.size();
-        this.payload = Message.listToPayload(payload);
-    }
-
-    /**
      * Definição e verificação do datagrama
      * 
      * @throws CommunicableException no caso da flag da mensagem fornecida
@@ -150,7 +117,6 @@ public class Datagram extends Message {
      */
     private void setDatagram(short flag, Node node) throws CommunicableException {
         this.setFlag(flag);
-        this.nrarguments = 0;
         this.payload = new byte[0];
         this.needsAck = false;
         this.isAck = false;
@@ -167,31 +133,18 @@ public class Datagram extends Message {
      * ser inválida (< 0).
      */
     private void setDatagram(short flag, byte[] payload, Node node) throws CommunicableException {
+
+        /* Verifica se o payload é grande demais */
+        if (this.operation == Operation.QUERY && payload.length > MAX_PAYLOAD)
+            throw new CommunicableException("payload-big");
+
+        /* Define as propriedades */
         this.setFlag(flag);
-        this.nrarguments = 1;
         this.payload = payload.clone();
         this.needsAck = false;
         this.isAck = false;
         this.isFragmented = false;
         this.totalSize = payload.length;
-        this.fragmentOffset = 0;
-        this.node = (Node) node.clone();
-    }
-
-    /**
-     * Definição e verificação do datagrama
-     * 
-     * @throws CommunicableException no caso da flag da mensagem fornecida
-     * ser inválida (< 0) ou no caso de a lista de payload fornecida ser
-     * inválida para a mensagem.
-     */
-    private void setDatagram(short flag, List<byte[]> payload, Node node) throws CommunicableException {
-        this.setFlag(flag);
-        this.setPayload(payload);
-        this.needsAck = false;
-        this.isAck = false;
-        this.isFragmented = false;
-        this.totalSize = this.payload.length;
         this.fragmentOffset = 0;
         this.node = (Node) node.clone();
     }
@@ -247,9 +200,9 @@ public class Datagram extends Message {
         return this.flag;
     }
 
-    /* Número de argumentos que uma mensagem carrega */
+    /* Número de argumentos da mensagem */
     public short getNrArguments() {
-        return this.nrarguments;
+        return 1;
     }
 
     /* Payload completo de uma mensagem */
@@ -315,7 +268,6 @@ public class Datagram extends Message {
             stream.writeShort(flag);
             stream.writeInt(this.fragmentOffset);
             stream.writeInt(this.totalSize);
-            stream.writeShort(this.nrarguments);
             stream.writeShort((short) this.payload.length);
             stream.write(this.getPayload());
 
@@ -349,14 +301,24 @@ public class Datagram extends Message {
         /* Verifica se é um ack de um ackable */
         if (this.needsAck() && ack.isAck())
             return (this.getIdentifier() == ack.getIdentifier() && this.operation == ack.operation
-                    && this.flag == ack.flag && this.nrarguments == ack.nrarguments
-                    && this.isFragmented == ack.isFragmented 
+                    && this.flag == ack.flag && this.isFragmented == ack.isFragmented 
                     && this.totalSize == ack.totalSize && this.fragmentOffset == ack.fragmentOffset
                     && this.node.equals(ack.node));
 
         /* Verifica se é um ack de query */
         if (this.getOperation() == Operation.QUERY)
-            return (this.getIdentifier() == ack.getIdentifier() && ack.operation == Operation.RESPONSE && this.node.equals(ack.node) && !ack.isFragmented);
+            return (this.getIdentifier() == ack.getIdentifier() && ack.operation == Operation.RESPONSE && this.node.equals(ack.node));
+
+        /* Se não é nenhum dos casos */
+        return false;
+    }
+
+    /* Verifica se a mensagem fornecida é uma resposta da mensagem */
+    public boolean isResponse(Datagram request) {
+
+        /* Verifica se é um ack de query */
+        if (this.getOperation() == Operation.RESPONSE)
+            return (this.getIdentifier() == request.getIdentifier() && request.operation == Operation.QUERY && this.node.equals(request.node));
 
         /* Se não é nenhum dos casos */
         return false;
@@ -383,7 +345,7 @@ public class Datagram extends Message {
             if (payload.length - i < MAX_PAYLOAD)
                 size = payload.length - i;
 
-            Datagram fragment = new Datagram(this.getIdentifier(), this.operation, this.flag, this.nrarguments, Arrays.copyOfRange(payload, i, i + size), true, false, true, payload.length, i, this.node);
+            Datagram fragment = new Datagram(this.getIdentifier(), this.operation, this.flag, Arrays.copyOfRange(payload, i, i + size), true, false, true, payload.length, i, this.node);
             fragments.add(fragment);
         }
 
@@ -430,8 +392,7 @@ public class Datagram extends Message {
 
         Datagram datagram = (Datagram) msg;
         return super.equals(msg) && this.operation == datagram.operation && this.flag == datagram.flag
-                && this.nrarguments == datagram.nrarguments && this.needsAck == datagram.needsAck
-                && this.isAck == datagram.isAck && this.isFragmented == datagram.isFragmented
+                && this.needsAck == datagram.needsAck && this.isAck == datagram.isAck && this.isFragmented == datagram.isFragmented
                 && this.totalSize == datagram.totalSize && this.fragmentOffset == datagram.fragmentOffset
                 && this.node.equals(datagram.node);
     }
@@ -449,7 +410,6 @@ public class Datagram extends Message {
         builder.append("(Datagram)").append(super.toString());
         builder.append("operation:").append(this.operation).append(";");
         builder.append("flag:").append(this.flag).append(";");
-        builder.append("nrarguments:").append(this.nrarguments).append(";");
         builder.append("payload:");
 
         for (byte b : this.payload)
@@ -520,7 +480,6 @@ public class Datagram extends Message {
             short flag = stream.readShort();
             int fragmentOffset = stream.readInt();
             int totalSize = stream.readInt();
-            short nrarguments = stream.readShort();
             int size = stream.readShort();
 
             byte[] payload = new byte[size];
@@ -552,7 +511,7 @@ public class Datagram extends Message {
             Node node = new Node(packet.getAddress().getHostAddress(), packet.getPort());
 
             /* Criação da mensagem */
-            Datagram result = new Datagram(identifier, operation, flag, nrarguments, payload, needsAck, isAck, isFragmented, totalSize, fragmentOffset, node);
+            Datagram result = new Datagram(identifier, operation, flag, payload, needsAck, isAck, isFragmented, totalSize, fragmentOffset, node);
 
             if (result.getChecksum() != checksum)
                 throw new CommunicableException("message-corrupted");
