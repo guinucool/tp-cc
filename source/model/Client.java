@@ -182,6 +182,22 @@ public class Client {
         }
     }
 
+    /* Devolve a informação binária de um bloco */
+    public byte[] getBlock(String filename, long offset, int size) throws DirectoryException {
+        
+        /* Bloqueia a operação de escrita */
+        this.read.lock();
+
+        try {
+
+            /* Devolve o ficheiro */
+            return this.directory.getBlock(filename, offset, size);
+            
+        } finally {
+            this.read.unlock();
+        }
+    }
+
     /* Devolve as informações deste node sobre formato node */
     public Node getNode() {
 

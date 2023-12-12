@@ -1,6 +1,9 @@
 package file;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +94,37 @@ public class Directory {
             files.add((RegisterFile) file.clone());
 
         return files;
+    }
+
+    /* Devolve um bloco pertencente a um ficheiro */
+    public byte[] getBlock(String filename, long offset, int size) throws DirectoryException {
+
+        /* Verifica se o bloco pedido existe no ficheiro */
+        File file = new File(this.getPath() + filename);
+
+        if (file.length() - offset - size < 0)
+            throw new DirectoryException("block-undefined");
+
+        try {
+
+            /* Abre as streams e lê a informação pretendida de lá */
+            FileInputStream reader = new FileInputStream(file);
+            BufferedInputStream input = new BufferedInputStream(reader);
+
+            byte[] data = new byte[size];
+
+            input.skip(offset);
+            input.read(data);
+
+            /* Fecha a stream buffer */
+            input.close();
+
+            /* Devolve a informação lida */
+            return data;
+
+        } catch (IOException e) {
+            throw new DirectoryException("filename-undefined");
+        }
     }
 
     /* Envia os vários ficheiros no node através do runner para o tracker */

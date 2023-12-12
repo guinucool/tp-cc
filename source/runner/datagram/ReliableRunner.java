@@ -14,6 +14,9 @@ import message.datagram.Datagram;
 import runner.Runner;
 import runner.RunnerException;
 
+/** 
+ * Objeto que define um runner de udp fiável.
+ */
 public class ReliableRunner extends Runner {
 
     public static final int SEND_TIMEOUT = 10;          /* Timeout de reenvio de uma mensagem */

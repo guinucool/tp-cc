@@ -17,6 +17,9 @@ import model.NodeException;
 import runner.RunnerException;
 import tools.Network;
 
+/**
+ * Objeto que define um runner básico sem qualquer controlo de fiabilidade de UDP.
+ */
 public class DatagramRunner {
 
     public static final int WAIT_TIMEOUT = 5000;                    /* Timeout por falta de receção de mensagens em milisegundos */
