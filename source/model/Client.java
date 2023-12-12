@@ -102,6 +102,22 @@ public class Client {
         }
     }
 
+    /* Verifica se uma resposta foi pedida */
+    public boolean wasRequested(short identifier) {
+
+        /* Bloqueia a operação de escrita */
+        this.read.lock();
+
+        try {
+            
+            /* Verifica se existe o tal pedido */
+            return this.manager.hasRequest(identifier);
+
+        } finally {
+            this.read.unlock();
+        }
+    }
+
     /* Resolve com sucesso uma mensagem de pedido */
     public void solveRequest(short identifier) throws RequestException {
 

@@ -12,6 +12,7 @@ import file.FileException;
 import file.TrackFile;
 import file.block.Block;
 import file.block.BlockException;
+import model.TrackerException.UsedFilenameException;
 
 /**
  * Objeto que define a estrutura do tracker e dos nodes e ficheiros que este
@@ -95,7 +96,7 @@ public class Tracker {
 
             /* Verifica se o nome do ficheiro não é usado por outro ficheiro */
             if (this.filenameUsed(file))
-                throw new TrackerException("filename-used");
+                throw new UsedFilenameException(file.getName());
 
             /* Adiciona o ficheiro caso ainda não esteja registado */
             if (this.files.get(file.getName()) == null)

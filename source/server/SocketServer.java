@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import runner.frame.FrameRunner;
 import tools.Network;
-import worker.FrameWorker;
+import worker.ServerFrameWorker;
 import worker.ServerWorker;
 import worker.WorkerException;
 import runner.RunnerException;
@@ -136,7 +136,7 @@ public class SocketServer implements Server {
 
         /* Criação do runner e do seu respetivo servidor */
         FrameRunner runner = new FrameRunner(client);
-        RunnerServer server = new RunnerServer(runner, new FrameWorker(runner));
+        RunnerServer server = new RunnerServer(runner, new ServerFrameWorker(runner));
 
         /* Criação e execução da thread */
         Thread worker = new Thread(new ServerWorker(server));

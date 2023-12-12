@@ -88,6 +88,7 @@ public class RunnerServer implements Server {
      * nas funções que a utilizam)
      */
     private void operate(Message message) throws WorkerException {
+        
         /* Caso o runner tenha sido propositadamente fechado */
         if (message == null) {
             this.stop();
