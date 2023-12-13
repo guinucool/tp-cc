@@ -1,6 +1,5 @@
 package message.datagram;
 
-import message.CommunicableException;
 import message.Requestable;
 import model.Node;
 import tools.Request;
@@ -13,13 +12,13 @@ public class DatagramRequest extends Datagram implements Requestable {
     private Request request;            /* Váriaveis de controlo da resolução do pedido */
 
     /* Construtor sem-argumento */
-    public DatagramRequest(short flag, Node node) throws CommunicableException {
+    public DatagramRequest(short flag, Node node) {
         super(flag, node);
         this.request = new Request();
     }
 
     /* Construtor uni-argumento */
-    public DatagramRequest(short flag, byte[] payload, Node node) throws CommunicableException {
+    public DatagramRequest(short flag, byte[] payload, Node node) {
         super(flag, payload, node);
         this.request = new Request();
     }

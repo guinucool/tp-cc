@@ -2,7 +2,6 @@ package message.frame;
 
 import java.util.List;
 
-import message.CommunicableException;
 import message.Requestable;
 import tools.Request;
 
@@ -14,19 +13,19 @@ public class FrameRequest extends Frame implements Requestable {
     private Request request;            /* Váriaveis de controlo da resolução do pedido */
 
     /* Construtor sem-argumento */
-    public FrameRequest(short flag) throws CommunicableException {
+    public FrameRequest(short flag) {
         super(flag);
         this.request = new Request();
     }
 
     /* Construtor uni-argumento */
-    public FrameRequest(short flag, byte[] payload) throws CommunicableException {
+    public FrameRequest(short flag, byte[] payload) {
         super(flag, payload);
         this.request = new Request();
     }
 
     /* Construtor multi-argumento */
-    public FrameRequest(short flag, List<byte[]> payload) throws CommunicableException {
+    public FrameRequest(short flag, List<byte[]> payload) {
         super(flag, payload);
         this.request = new Request();
     }

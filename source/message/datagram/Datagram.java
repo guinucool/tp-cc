@@ -1,5 +1,10 @@
 package message.datagram;
 
+/**
+ * Existem exceções neste documentos que foram usadas para definir condições e portanto
+ * o seu tratamento de redução será deixado para o futuro, se tal for possível.
+ */
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -39,28 +44,28 @@ public class Datagram extends Message {
     private Node node;              /* Endereço e porta do datagrama */
 
     /* Construtor sem-argumento */
-    public Datagram(short flag, Node node) throws CommunicableException {
+    public Datagram(short flag, Node node) {
         super();
         this.operation = Operation.QUERY;
         this.setDatagram(flag, node);
     }
 
     /* Construtor sem-argumento resposta */
-    public Datagram(short identifier, short flag, Node node) throws CommunicableException {
+    public Datagram(short identifier, short flag, Node node) {
         super(identifier);
         this.operation = Operation.RESPONSE;
         this.setDatagram(flag, node);
     }
 
     /* Construtor uni-argumento */
-    public Datagram(short flag, byte[] payload, Node node) throws CommunicableException {
+    public Datagram(short flag, byte[] payload, Node node) {
         super();
         this.operation = Operation.QUERY;
         this.setDatagram(flag, payload, node);
     }
 
     /* Construtor uni-argumento resposta */
-    public Datagram(short identifier, short flag, byte[] payload, Node node) throws CommunicableException {
+    public Datagram(short identifier, short flag, byte[] payload, Node node) {
         super(identifier);
         this.operation = Operation.RESPONSE;
         this.setDatagram(flag, payload, node);
@@ -94,28 +99,18 @@ public class Datagram extends Message {
         this.node = (Node) node.clone();
     }
 
-    /**
-     * Definição e verificação da flag
-     * 
-     * @throws CommunicableException no caso da flag da mensagem fornecida
-     * ser inválida (< 0).
-     */
-    private void setFlag(short flag) throws CommunicableException {
+    /* Definição e verificação da flag */
+    private void setFlag(short flag) {
 
         /* Verifica se a flag é válida */
         if (flag < 0 || flag > 4095)
-            throw new CommunicableException("flag-invalid");
+            throw new RuntimeException("flag-invalid");
 
         this.flag = flag;
     }
 
-    /**
-     * Definição e verificação do datagrama
-     * 
-     * @throws CommunicableException no caso da flag da mensagem fornecida
-     * ser inválida (< 0).
-     */
-    private void setDatagram(short flag, Node node) throws CommunicableException {
+    /* Definição e verificação do datagrama */
+    private void setDatagram(short flag, Node node) {
         this.setFlag(flag);
         this.payload = new byte[0];
         this.needsAck = false;
@@ -126,17 +121,12 @@ public class Datagram extends Message {
         this.node = (Node) node.clone();
     }
 
-    /**
-     * Definição e verificação do datagrama
-     * 
-     * @throws CommunicableException no caso da flag da mensagem fornecida
-     * ser inválida (< 0).
-     */
-    private void setDatagram(short flag, byte[] payload, Node node) throws CommunicableException {
+    /* Definição e verificação do datagrama */
+    private void setDatagram(short flag, byte[] payload, Node node) {
 
         /* Verifica se o payload é grande demais */
         if (this.operation == Operation.QUERY && payload.length > MAX_PAYLOAD)
-            throw new CommunicableException("payload-big");
+            throw new RuntimeException("payload-big");
 
         /* Define as propriedades */
         this.setFlag(flag);
@@ -186,7 +176,7 @@ public class Datagram extends Message {
     }
 
     /* Descobre qual a checksum para o pacote datagrama */
-    public int getChecksum() throws CommunicableException {
+    public int getChecksum() {
         return crc32checksum(this.getBytes());
     }
 
@@ -241,7 +231,7 @@ public class Datagram extends Message {
     }
 
     /* Converte o datagrama em formato binário */
-    private byte[] getBytes() throws CommunicableException {
+    private byte[] getBytes() {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
@@ -276,7 +266,7 @@ public class Datagram extends Message {
             return barray.toByteArray();
 
         } catch (IOException e) {
-            throw new CommunicableException("datagram-outofmemory");
+            throw new RuntimeException("datagram-outofmemory");
         }
     }
 
@@ -427,13 +417,8 @@ public class Datagram extends Message {
         return builder.toString();
     }
 
-    /**
-     * Transformação do datagrama em binário
-     * 
-     * @throws CommunicableException no caso de não existir memória suficiente para
-     * alocar o datagrama em binário.
-     */
-    public DatagramPacket toCommunicable() throws CommunicableException {
+    /* Transformação do datagrama em binário */
+    public DatagramPacket toCommunicable() {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
@@ -451,7 +436,7 @@ public class Datagram extends Message {
             return new DatagramPacket(payload, payload.length, InetAddress.getByName(this.node.getAddress()), this.node.getPort());
 
         } catch (IOException e) {
-            throw new CommunicableException("datagram-outofmemory");
+            throw new RuntimeException("datagram-outofmemory");
         }
     }
 

@@ -25,42 +25,42 @@ public class Frame extends Message {
     private byte[] payload;         /* Payload de uma mensagem */
 
     /* Construtor sem-argumento */
-    public Frame(short flag) throws CommunicableException {
+    public Frame(short flag) {
         super();
         this.operation = Operation.QUERY;
         this.setFrame(flag);
     }
 
     /* Construtor sem-argumento resposta */
-    public Frame(short identifier, short flag) throws CommunicableException {
+    public Frame(short identifier, short flag) {
         super(identifier);
         this.operation = Operation.RESPONSE;
         this.setFrame(flag);
     }
 
     /* Construtor uni-argumento */
-    public Frame(short flag, byte[] payload) throws CommunicableException {
+    public Frame(short flag, byte[] payload) {
         super();
         this.operation = Operation.QUERY;
         this.setFrame(flag, payload);
     }
 
     /* Construtor uni-argumento resposta */
-    public Frame(short identifier, short flag, byte[] payload) throws CommunicableException {
+    public Frame(short identifier, short flag, byte[] payload) {
         super(identifier);
         this.operation = Operation.RESPONSE;
         this.setFrame(flag, payload);
     }
 
     /* Construtor multi-argumento */
-    public Frame(short flag, List<byte[]> payload) throws CommunicableException {
+    public Frame(short flag, List<byte[]> payload) {
         super();
         this.operation = Operation.QUERY;
         this.setFrame(flag, payload);
     }
 
     /* Construtor multi-argumento resposta */
-    public Frame(short identifier, short flag, List<byte[]> payload) throws CommunicableException {
+    public Frame(short identifier, short flag, List<byte[]> payload) {
         super(identifier);
         this.operation = Operation.RESPONSE;
         this.setFrame(flag, payload);
@@ -84,69 +84,43 @@ public class Frame extends Message {
         this.payload = payload.clone();
     }
 
-    /**
-     * Definição e verificação da flag
-     * 
-     * @throws CommunicableException no caso da flag da mensagem fornecida
-     * ser inválida (< 0).
-     */
-    private void setFlag(short flag) throws CommunicableException {
+    /* Definição e verificação da flag */
+    private void setFlag(short flag) {
 
         /* Verifica se a flag é válida */
         if (flag < 0)
-            throw new CommunicableException("flag-invalid");
+            throw new RuntimeException("flag-invalid");
 
         this.flag = flag;
     }
 
-    /**
-     * Definição e verificação do payload através de uma lista
-     * 
-     * @throws CommunicableException no caso da lista de bytes fornecida ser
-     * grande demais para a mensagem.
-     */
-    private void setPayload(List<byte[]> payload) throws CommunicableException {
+    /* Definição e verificação do payload através de uma lista */
+    private void setPayload(List<byte[]> payload) {
 
         /* Verifica se o tamanho da lista é aceitável */
         if (payload.size() > Short.MAX_VALUE)
-            throw new CommunicableException("payload-big");
+            throw new RuntimeException("payload-big");
         
         this.nrarguments = (short) payload.size();
         this.payload = Message.listToPayload(payload);
     }
 
-    /**
-     * Definição e verificação do frame
-     * 
-     * @throws CommunicableException no caso da flag da mensagem fornecida
-     * ser inválida (< 0).
-     */
-    private void setFrame(short flag) throws CommunicableException {
+    /* Definição e verificação do frame */
+    private void setFrame(short flag) {
         this.setFlag(flag);
         this.nrarguments = 0;
         this.payload = new byte[0];
     }
 
-    /**
-     * Definição e verificação do frame
-     * 
-     * @throws CommunicableException no caso da flag da mensagem fornecida
-     * ser inválida (< 0).
-     */
-    private void setFrame(short flag, byte[] payload) throws CommunicableException {
+    /* Definição e verificação do frame */
+    private void setFrame(short flag, byte[] payload) {
         this.setFlag(flag);
         this.nrarguments = 1;
         this.payload = payload.clone();
     }
 
-    /**
-     * Definição e verificação do frame
-     * 
-     * @throws CommunicableException no caso da flag da mensagem fornecida
-     * ser inválida (< 0) ou no caso de a lista de payload fornecida ser
-     * inválida para a mensagem.
-     */
-    private void setFrame(short flag, List<byte[]> payload) throws CommunicableException {
+    /* Definição e verificação do frame */
+    private void setFrame(short flag, List<byte[]> payload) {
         this.setFlag(flag);
         this.setPayload(payload);
     }
@@ -203,13 +177,8 @@ public class Frame extends Message {
         return builder.toString();
     }
 
-    /**
-     * Transformação do frame em binário
-     * 
-     * @throws CommunicableException no caso de não existir memória suficiente para
-     * alocar o frame em binário.
-     */
-    public byte[] toCommunicable() throws CommunicableException {
+    /* Transformação do frame em binário */
+    public byte[] toCommunicable() {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
@@ -231,7 +200,7 @@ public class Frame extends Message {
             return barray.toByteArray();
 
         } catch (IOException e) {
-            throw new CommunicableException("frame-outofmemory");
+            throw new RuntimeException("frame-outofmemory");
         }
     }
 

@@ -65,12 +65,13 @@ public abstract class Message implements Communicable {
      * @throws CommunicableException no caso de o sistema
      * ficar sem memória.
      */
-    public static byte[] listToPayload(List<byte[]> payload) throws CommunicableException {
+    public static byte[] listToPayload(List<byte[]> payload) {
+
+        ByteArrayOutputStream barray = new ByteArrayOutputStream();
+        DataOutputStream stream = new DataOutputStream(barray);
 
         /* Criação do payload */
         try {
-            ByteArrayOutputStream barray = new ByteArrayOutputStream();
-            DataOutputStream stream = new DataOutputStream(barray);
 
             for (byte[] data : payload) {
                 stream.writeInt(data.length);
@@ -79,8 +80,9 @@ public abstract class Message implements Communicable {
 
             stream.flush();
             return barray.toByteArray();
+
         } catch (IOException e) {
-            throw new CommunicableException("payload-outofmemory");
+            throw new RuntimeException("payload-outofmemory");
         }
     }
 }
