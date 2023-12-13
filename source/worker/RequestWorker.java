@@ -1,6 +1,5 @@
 package worker;
 
-import message.CommunicableException;
 import message.Requestable;
 import runner.Runner;
 import runner.RunnerException;
@@ -31,7 +30,7 @@ public class RequestWorker implements Runnable {
         /* Tenta enviar o pedido para o servidor */
         try {
             this.runner.send(this.resquest);
-        } catch (CommunicableException | RunnerException e) {
+        } catch (RunnerException e) {
             this.resquest.fail(e);
         }
     }

@@ -31,15 +31,15 @@ public class ServerFrameWorker implements MessageWorker {
     }
 
     /* Cria um interpretador de mensagem para ser corrido numa thread */
-    public MessageWorker operateMessage(Message msg) throws WorkerException {
+    public MessageWorker operateMessage(Message msg) {
         
         /* Verifica se a mensagem fornecida é nula */
         if(msg == null)
-            throw new WorkerException("message-null");
+            throw new RuntimeException("message-null");
         
         /* Verifica se a mensagem fornecida é do tipo correto */
         if (!(msg instanceof Frame))
-            throw new WorkerException("message-invalid");
+            throw new RuntimeException("message-invalid");
 
         /* Cria um novo worker para operar a mensagem */
         ServerFrameWorker worker = new ServerFrameWorker(this);

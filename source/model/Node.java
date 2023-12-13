@@ -69,7 +69,7 @@ public class Node {
     }
 
     /* Transforma o node em formato binário */
-    public byte[] getBytes() throws NodeException {
+    public byte[] getBytes() {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
@@ -83,7 +83,7 @@ public class Node {
             return barray.toByteArray();
 
         } catch (IOException e) {
-            throw new NodeException("node-outofmemory");
+            throw new RuntimeException("node-outofmemory");
         }
     }
 

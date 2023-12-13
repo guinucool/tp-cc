@@ -9,7 +9,6 @@ import message.Message;
 import runner.Runner;
 import runner.RunnerException;
 import worker.MessageWorker;
-import worker.WorkerException;
 
 /**
  * Objeto que define um servidor que usa como base da sua audição um runner que recebe mensagens.
@@ -75,7 +74,7 @@ public class RunnerServer implements Server {
                 this.write.unlock();
             }
 
-        } catch (RunnerException | WorkerException e) {
+        } catch (RunnerException e) {
             this.stop();
             this.template.close(false);
         }
@@ -87,7 +86,7 @@ public class RunnerServer implements Server {
      * (É esperado que o tratamento de concorrência desta função seja tratado
      * nas funções que a utilizam)
      */
-    private void operate(Message message) throws WorkerException {
+    private void operate(Message message) {
         
         /* Caso o runner tenha sido propositadamente fechado */
         if (message == null) {
