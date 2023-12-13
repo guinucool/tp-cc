@@ -104,10 +104,25 @@ public class ServerFrameWorker implements MessageWorker {
                 return;
             }
 
+            /* Handler de desconexão */
+            if (this.frame.getIdentifier() == 101 && this.frame.getNrArguments() == 0) {
+
+                /* Envia a resposta de confirmação para o node */
+                this.runner.send(new Frame(this.frame.getIdentifier(), (short) 0));
+
+                /* Fecha o runner após o envio */
+                this.runner.close();
+
+                /* Impede a interpretação de continuar */
+                return;
+            }
+
         } catch (Exception e) {
-            System.out.println("Unstable connection detected on runner " + this.runner.getId() + "! Closing connection...");
+            /* Não é preciso tratar a exceção */
         }
 
+        /* Caso a mensagem recebida não seja reconhecida */
+        System.out.println("Unstable connection detected on runner " + this.runner.getId() + "! Closing connection...");
         this.runner.close();
     }
 
