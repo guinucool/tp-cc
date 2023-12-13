@@ -126,14 +126,12 @@ public class DatagramRunner {
      * Envio de uma mensagem para um node
      * 
      * @throws RunnerException no caso de o socket de envio tiver sido desligado.
-     * @throws CommunicableException no caso de a criação do pacote para envio for
-     * impossível.
      */
-    public void send(Communicable msg) throws RunnerException, CommunicableException {
+    public void send(Communicable msg) throws RunnerException {
 
         /* Verifica se a mensagem pretendida é um frame */
         if (!(msg instanceof Datagram))
-            throw new RunnerException("message-invalid");
+            throw new RuntimeException("message-invalid");
 
         /* Conversão da mensagem para pacote datagrama */
         DatagramPacket packet = (DatagramPacket) msg.toCommunicable();

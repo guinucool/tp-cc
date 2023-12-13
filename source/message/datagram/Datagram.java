@@ -315,11 +315,11 @@ public class Datagram extends Message {
     }
 
     /* Fragmenta uma mensagem */
-    public List<Datagram> fragment() throws CommunicableException {
+    public List<Datagram> fragment() {
 
         /* Verifica se há necessidade de fragmentar a mensagem */
         if (this.getPayloadSize() <= MAX_PAYLOAD)
-            throw new CommunicableException("fragmentation-unnecessary");
+            throw new RuntimeException("fragmentation-unnecessary");
 
         /* Calcula o payload para fragmentar */
         byte[] payload = this.getPayload();

@@ -92,14 +92,12 @@ public class FrameRunner extends Runner {
      * Envio de uma mensagem para o socket ao qual está ligado
      * 
      * @throws RunnerException no caso de a ligação entre sockets tiver sido perdida.
-     * @throws CommunicableException no caso de a criação da mensagem binária para envio for
-     * impossível.
      */
-    public void send(Communicable msg) throws RunnerException, CommunicableException {
+    public void send(Communicable msg) throws RunnerException {
 
         /* Verifica se a mensagem pretendida é um frame */
         if (!(msg instanceof Frame))
-            throw new RunnerException("message-invalid");
+            throw new RuntimeException("message-invalid");
 
         /* Conversão da mensagem para frame binário */
         byte[] packet = (byte[]) msg.toCommunicable();

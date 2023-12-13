@@ -123,27 +123,24 @@ public class TimeoutList {
     }
 
     /* Verifica se existem fragmentos de um pacote na lista de timeouts */
-    public boolean containsFragments(Datagram packet) throws CommunicableException {
+    /*public boolean containsFragments(Datagram packet) throws CommunicableException {
 
-        /* Cria a lista de fragmentos pretendida */
         List<Datagram> fragments = packet.fragment();
 
-        /* Bloqueia a operação de escrita */
         this.read.lock();
 
         try {
-            /* Procura pelos fragmentos do pacote */
+            
             for (Datagram fragment : fragments)
                 if (this.has(fragment))
                     return true;
 
-            /* Caso não encontre */
             return false;
 
         } finally {
             this.read.unlock();
         }
-    }
+    }*/
 
     /* Verifica se existem resposta a um pacote existe na lista de timeouts */
     public boolean containsResponses(Datagram packet) {
@@ -229,11 +226,6 @@ public class TimeoutList {
 
                     /* Tenta reenviar o pacote */
                     runner.send(packet);
-
-                } catch (CommunicableException e) {
-
-                    /* Invalida este tick */
-                    timeout.untick();
 
                 } catch (RunnerException e) {
                     /* Já vai ser tratada após o timeout */

@@ -1,7 +1,6 @@
 package runner;
 
 import message.Communicable;
-import message.CommunicableException;
 import message.Message;
 
 /**
@@ -34,10 +33,8 @@ public abstract class Runner {
      * 
      * @throws RunnerException no caso de a conexão do socket ter sido desligada
      * por instabilidades.
-     * @throws CommunicableException no caso do runner falhar na criação de uma
-     * mensagem.
      */
-    public abstract void send(Communicable msg) throws RunnerException, CommunicableException;
+    public abstract void send(Communicable msg) throws RunnerException;
 
     /**
      * Receber uma mensagem através deste runner

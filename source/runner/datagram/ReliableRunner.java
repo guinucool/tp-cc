@@ -71,7 +71,7 @@ public class ReliableRunner extends Runner {
      * @throws CommunicableException no caso de a criação do pacote para envio for
      * impossível.
      */
-    public void send(Communicable msg) throws RunnerException, CommunicableException {
+    public void send(Communicable msg) throws RunnerException {
 
         /* Verifica se a mensagem pretendida é um frame */
         if (!(msg instanceof Datagram))
@@ -217,7 +217,7 @@ public class ReliableRunner extends Runner {
     }
 
     /* Cria os vários fragmentos para serem enviados */
-    private void sendFragments(Datagram packet) throws RunnerException, CommunicableException {
+    private void sendFragments(Datagram packet) throws RunnerException {
 
         /* Fragmenta o pacote em vários */
         List<Datagram> fragments = packet.fragment();
