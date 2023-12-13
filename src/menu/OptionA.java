@@ -2,7 +2,7 @@ package menu;
 
 import java.util.*;
 
-public class Option {
+public class OptionA {
     
     private String command;
     private int arguments;

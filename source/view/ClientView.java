@@ -4,6 +4,7 @@ import java.util.List;
 
 import file.RegisterFile;
 import model.Client;
+import model.Node;
 
 public class ClientView {
     
@@ -27,7 +28,7 @@ public class ClientView {
 
     /* Verifica se existe o cliente está aberto */
     public boolean isClosed() {
-        return this.client.getStatus();
+        return !(this.client.getStatus());
     }
 
     /* Verifica o estado dos ficheiros do cliente */
@@ -81,7 +82,12 @@ public class ClientView {
     }
 
     /* Imprime o endereço em que o node está alojado */
-    public void printAdress() {
-        
+    public void printAddress() {
+
+        /* Vai buscar o node que define a conexão do cliente */
+        Node node = this.client.getNode();
+
+        /* Imprime as informações */
+        System.out.println("The node is running on: " + node.getAddress() + ":" + node.getPort() + "!");
     }
 }

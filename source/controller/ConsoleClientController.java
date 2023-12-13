@@ -2,10 +2,8 @@ package controller;
 
 import model.ClientException;
 import file.DirectoryException;
-import file.FileException;
 import message.CommunicableException;
 import model.Client;
-import model.NodeException;
 
 public class ConsoleClientController {
     
@@ -28,12 +26,12 @@ public class ConsoleClientController {
     }
 
     /* Faz o registo do cliente no tracker */
-    public void register() throws NodeException, ClientException {
+    public void register() throws ClientException {
         this.client.sendRegister();
     }
 
     /* Envia a informação dos ficheiros do cliente para o tracker */
-    public void sendFiles() throws ClientException, DirectoryException, FileException {
+    public void sendFiles() throws ClientException, DirectoryException {
         this.client.sendFiles();
     }
 

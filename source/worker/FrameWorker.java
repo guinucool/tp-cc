@@ -123,7 +123,7 @@ public class FrameWorker implements MessageWorker {
             }
 
             /* Handler de desconexão */
-            if (this.frame.getIdentifier() == 101 && this.frame.getNrArguments() == 0) {
+            if (this.frame.getFlag() == 101 && this.frame.getNrArguments() == 0) {
 
                 /* Envia a resposta de confirmação para o node */
                 this.runner.send(new Frame(this.frame.getIdentifier(), (short) 0));

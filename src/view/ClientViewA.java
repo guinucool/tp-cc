@@ -4,7 +4,7 @@ import client.Client;
 import client.ClientException;
 import model.file.NodeFile;
 
-public class ClientView {
+public class ClientViewA {
     
     private Client client;
 

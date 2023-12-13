@@ -2,7 +2,7 @@ package menu;
 
 import java.util.*;
 
-public class Menu {
+public class MenuA {
     
     private Map<String,Option> commands;
     private List<String> arguments;

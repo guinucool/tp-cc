@@ -10,7 +10,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import file.Directory;
 import file.DirectoryException;
-import file.FileException;
 import file.RegisterFile;
 import message.CommunicableException;
 import message.frame.FrameRequest;
@@ -18,6 +17,7 @@ import runner.RunnerException;
 import runner.frame.FrameRunner;
 import server.RunnerServer;
 import server.ServerException;
+import worker.ServerWorker;
 import tools.Network;
 import tools.RequestException;
 import tools.RequestManager;
@@ -33,7 +33,6 @@ public class Client {
 
     private Directory directory;                    /* Diretoria onde são armazenados os ficheiros do node */
     private FrameRunner tracker;                    /* Runner que liga o node ao tracker */
-    private RunnerServer trackerListener;           /* Audição das respostas vindas do servidor */
     private RequestManager manager;                 /* Gesttor de pedidos de mensagens */
     private boolean status;                         /* Status do cliente node em relação ao servidor tracker */
 
@@ -63,12 +62,18 @@ public class Client {
     public static void startClient(String path, String address) throws ClientException, DirectoryException {
         if (singleton == null)
             singleton = new Client(path, address);
+
+        /* Faz o registo do node */
+        singleton.sendRegister();
     }
 
     /* Inicia a instância global de cliente com as propriedades fornecidas */
     public static void startClient(String path, String address, int port) throws ClientException, DirectoryException {
         if (singleton == null)
             singleton = new Client(path, address, port);
+
+        /* Faz o registo do node */
+        singleton.sendRegister();
     }
 
     /* Devolve a instância global de cliente */
@@ -99,10 +104,13 @@ public class Client {
             /* Liga ao servidor e cria um runner para a ligação */
             Socket server = new Socket(address, port);
             this.tracker = new FrameRunner(server);
-            this.trackerListener = new RunnerServer(tracker, new FrameWorker(this.tracker, false));
+            RunnerServer listener = new RunnerServer(tracker, new FrameWorker(this.tracker, false));
+
+            /* Cria a thread que irá correr o servidor */
+            Thread worker = new Thread(new ServerWorker(listener));
+            worker.start();
 
         } catch (IOException | RunnerException | ServerException | WorkerException e) {
-            this.close();
             throw new ClientException("server-unreachable");
         }
     }
@@ -273,7 +281,7 @@ public class Client {
     }
 
     /* Envia o registo deste node para o tracker */
-    public void sendRegister() throws NodeException, ClientException {
+    public void sendRegister() throws ClientException {
 
         /* Bloqueia as operações de escrita e leitura */
         this.write.lock();
@@ -287,7 +295,7 @@ public class Client {
             FrameRequest request = new FrameRequest((short) 100, node.getBytes());
             this.manager.sendSequentialRequest(tracker, request);
 
-        } catch(Exception e) {
+        } catch(RequestException | CommunicableException e) {
             this.close();
             throw new ClientException("connection-closed");
         } finally {
@@ -296,7 +304,7 @@ public class Client {
     }
 
     /* Envia o registo de ficheiros deste node para o tracker */
-    public void sendFiles() throws ClientException, DirectoryException, FileException {
+    public void sendFiles() throws ClientException, DirectoryException {
         
         /* Bloqueia as operações de escrita e leitura */
         this.write.lock();
@@ -306,7 +314,7 @@ public class Client {
             /* Envia os vários ficheiros presentes na diretoria */
             this.directory.sendFiles(manager, tracker);
 
-        } catch(Exception e) {
+        } catch(RequestException | CommunicableException e) {
             this.close();
             throw new ClientException("connection-closed");
         } finally {
@@ -346,7 +354,10 @@ public class Client {
             FrameRequest request = new FrameRequest((short) 101);
             this.manager.sendSequentialRequest(tracker, request);
 
-        } catch(Exception e) {
+            /* Fecha o cliente */
+            this.close();
+
+        } catch(RequestException | CommunicableException e) {
             this.close();
             throw new ClientException("connection-closed");
         } finally {
@@ -357,9 +368,11 @@ public class Client {
     /* Fecha este cliente sem controlo de concorrência */
     private void close() {
         this.tracker.close();
-        this.trackerListener.stop();
 
         this.status = false;
+
+        this.manager.failAllRequest(new RunnerException("connection-lost"));
+        this.requestWait.signalAll();
     }
 
     /* Fecha o cliente */
@@ -369,6 +382,7 @@ public class Client {
         this.write.lock();
 
         this.close();
+
         this.write.unlock();
     }
 

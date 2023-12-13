@@ -11,7 +11,7 @@ import controller.ClientControl;
 import socket.RunnerException;
 import view.ClientView;
 
-public class Console {
+public class ConsoleA {
 
     private ClientControl control;
     private ClientView view;

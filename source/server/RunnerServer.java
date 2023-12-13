@@ -90,7 +90,7 @@ public class RunnerServer implements Server {
         
         /* Caso o runner tenha sido propositadamente fechado */
         if (message == null) {
-            this.stop();
+            this.close();
             this.template.close(true);
             return;
         }
@@ -114,6 +114,15 @@ public class RunnerServer implements Server {
         /* Bloqueia a operação de escrita */
         this.write.lock();
 
+        this.close();
+        this.write.unlock();
+    }
+
+    private void close() {
+
+        /* Fecha o runnner */
+        this.runner.close();
+
         /* Espera pelo término de todas as threads */
         for (Thread worker : this.workers) {
             try {
@@ -122,7 +131,6 @@ public class RunnerServer implements Server {
                 /* Não é preciso tratar esta exceção */
             }
         }
-        this.write.unlock();
     }
 
     /* Verifica se o servidor está fechado */

@@ -2,90 +2,97 @@ package menu;
 
 import java.util.List;
 
-import client.Client;
-import client.ClientException;
-import client.ClientException.AllFilesSentException;
-import client.ClientException.FilenameExistsException;
-
-import controller.ClientControl;
-import socket.RunnerException;
+import model.ClientException;
+import controller.ConsoleClientController;
+import file.DirectoryException;
 import view.ClientView;
 
 public class Console {
 
-    private ClientControl control;
+    private ConsoleClientController control;
     private ClientView view;
     private Menu menu;
+    private boolean quit;
     
-    /* Constructors */
-    public Console(Client client) {
-        this.control = new ClientControl(client);
-        this.view = new ClientView(client);
+    /* Constructor vazio */
+    public Console() {
+
+        this.control = ConsoleClientController.getInstance();
+        this.view = ClientView.getInstance();
+        this.quit = false;
 
         this.menu = new Menu();
         this.menu.addOption("UPDATE", 0);
         this.menu.addOption("PATH", 0);
-        this.menu.addOption("IP", 0);
+        this.menu.addOption("ADDRESS", 0);
         this.menu.addOption("FILES", 0);
         this.menu.addOption("HELP", 0);
     }
 
-    /* Console */
+    /* Corre a consola de comandos */
     public void run() {
+
+        /* Corre a consola enquanto houver ligação */
         while (!this.view.isClosed()) {
             this.menu.readCommand();
             this.readArguments(this.menu.getArguments());   
         }
+
+        /* Caso o cliente se tenha desligado sem razão */
+        if (!quit)
+            System.out.println("Connection was lost unexpectadly!");
     }
 
+    /* Lê os argumentos obtidos na leitura de comandos */
     private void readArguments(List<String> args) {
 
+        /* Procura pelo comando nos argumentos */
         String cmd = args.get(0);
 
-        if (cmd.equals("QUIT")) {
-            try {
-                this.control.sendDisconnect();
+        /* Tenta intrepretar o comando, tendo em conta as possíveis exceções */
+        try {
+
+            /* Handler do comando "QUIT" */
+            if (cmd.equals("QUIT")) {
+                this.control.disconnect();
+                this.quit = true;
                 System.out.println("Disconnecting...");
-            } catch (RunnerException e) {
-                System.out.println("Connection was already broken...");
-            } catch (ClientException e) {
-                System.out.println("Disconnected from unsafe connection...");
             }
-        }
 
-        if (cmd.equals("UPDATE")) {
-            try {
-                this.control.updateServer();
-                System.out.println("Sucessful update!");
-            } catch (AllFilesSentException e) {
-                System.out.println("All available files have already been sent to the server!");
-            } catch (FilenameExistsException e) {
-                System.out.println("The filename " + e.getMessage() + " already exists on the server, please change the name!");
-            } catch (RunnerException e) {
-                System.out.println("Connection has been broken...");
-            } catch (ClientException e) {
-                System.out.println("Breaking unsafe connection...");
+            /* Handler do comando "UPDATE" */
+            if (cmd.equals("UPDATE")) {
+
+                /* Processo de envio e verificação de envio */
+                try {
+                    this.control.sendFiles();
+                    this.view.printFileState();
+                } catch (DirectoryException e) {
+                    System.out.println("There are no files available to be sent!");
+                }
             }
-        }
 
-        if (cmd.equals("IP")) {
-            try {
-                this.view.printIp();
-            } catch (ClientException e) {
-                System.out.println("Breaking unstable connection...");
+            /* Handler do comando "FILES" */
+            if (cmd.equals("FILES")) {
+                this.view.printFiles();
             }
-        }
 
-        if (cmd.equals("FILES")) {
-            this.view.printFiles();
-        }
+            /* Handler do comando "PATH" */
+            if (cmd.equals("PATH")) {
+                this.view.printPath();
+            }
 
-        if (cmd.equals("PATH")) {
-            this.view.printPath();
-        }
+            /* Handler do comando "HELP" */
+            if (cmd.equals("HELP")) {
+                this.menu.display();
+            }
 
-        if (cmd.equals("HELP")) {
-            this.menu.display();
+            /* Handler do comando "ADDRESS" */
+            if (cmd.equals("ADDRESS")) {    
+                this.view.printAddress();
+            }
+            
+        } catch (ClientException e) {
+            System.out.println("Disconnected from unsafe connection...");
         }
     }
 }

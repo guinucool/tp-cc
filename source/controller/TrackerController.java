@@ -60,6 +60,7 @@ public class TrackerController {
 
     /* Dessassocia um node ao tracker */
     public void disconnectNode(int id) {
+        this.tracker.removeNodeFromFiles(id);
         this.tracker.removeNode(id);
     }
 }
