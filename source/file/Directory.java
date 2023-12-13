@@ -139,22 +139,24 @@ public class Directory {
 
         List<byte[]> payload = new ArrayList<>();
 
-        for (RegisterFile file : this.files.values())
+        for (RegisterFile file : this.files.values()) {
             payload.add(file.getBytes());
+            file.setStatus(0);
+        }
 
         FrameRequest request = new FrameRequest((short) 200, payload);
         manager.sendSequentialRequest(runner, request);
     }
 
-    /* Atualiza o estado de um ficheiro em específico */
-    public void updateFileStatus(String filename, int status) throws DirectoryException {
+    /* Atualiza o estado de um ficheiro em específico para nome repetido */
+    public void updateFileStatus(String filename) throws DirectoryException {
 
         /* Verifica se o ficheiro pretendido existe */
         if (!this.files.containsKey(filename))
             throw new DirectoryException("filename-undefined");
 
         /* Atualiza o estado */
-        this.files.get(filename).setStatus(status);
+        this.files.get(filename).setStatus(2);
     }
 
     /* Converte a diretoria em formato string */

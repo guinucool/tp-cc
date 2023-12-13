@@ -55,7 +55,7 @@ public class RequestManager {
     }
 
     /* Resolve em falhanço uma pedido */
-    public void failRequest(short identifier, RunnerException e) throws RequestException {
+    public void failRequest(short identifier, CommunicableException e) throws RequestException {
 
         /* Verifica se o pedido existe no cliente */
         if (!this.requests.containsKey(identifier))

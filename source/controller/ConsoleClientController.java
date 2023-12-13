@@ -27,19 +27,23 @@ public class ConsoleClientController {
         return singleton;
     }
 
-    public void register() throws CommunicableException, NodeException, ClientException {
+    /* Faz o registo do cliente no tracker */
+    public void register() throws NodeException, ClientException {
         this.client.sendRegister();
     }
 
-    public void sendFiles() throws ClientException, DirectoryException, FileException, CommunicableException {
+    /* Envia a informação dos ficheiros do cliente para o tracker */
+    public void sendFiles() throws ClientException, DirectoryException, FileException {
         this.client.sendFiles();
     }
 
-    public void requestFile() {
-
+    /* Pede informações relativas a um ficheiro para download do tracker */
+    public void requestFile(String filename) throws CommunicableException, ClientException {
+        this.client.requestFile(filename);
     }
 
-    public void disconnect() throws CommunicableException, ClientException {
+    /* Informa o tracker que se vai desligar */
+    public void disconnect() throws ClientException {
         this.client.sendDisconnect();
     }
 }
