@@ -21,7 +21,7 @@ public class Block {
     private List<Node> nodes;       /* Lista de nodes que possuem o bloco */
 
     /* Construtor parametrizado */
-    public Block(int offset) throws BlockException {
+    public Block(int offset) {
         this.setOffset(offset);
         this.nodes = new ArrayList<>();
     }
@@ -56,21 +56,25 @@ public class Block {
                 this.addNode(new Node(node));
             }
 
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             throw new BlockException("block-invalid");
         }
     }
 
     /* Definição do offset do bloco */
-    private void setOffset(int offset) throws BlockException {
+    private void setOffset(int offset) {
+
+        /* Verifica se o offset fornecido é válido */
         if (offset < 0)
-            throw new BlockException("offset-invalid");
+            throw new RuntimeException("offset-invalid");
 
         this.offset = offset;
     }
 
     /* Adição de um novo node ao bloco */
     public void addNode(Node node) throws BlockException {
+
+        /* Verifica se o node já não existe no bloco */
         if (this.nodes.contains(node))
             throw new BlockException("node-defined");
 
@@ -99,7 +103,7 @@ public class Block {
     }
 
     /* Converte um bloco para formato binário */
-    public byte[] getBytes() throws BlockException {
+    public byte[] getBytes() {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
@@ -120,8 +124,8 @@ public class Block {
 
             return barray.toByteArray();
 
-        } catch (IOException | NodeException e) {
-            throw new BlockException("block-outofmemory");
+        } catch (IOException e) {
+            throw new RuntimeException("block-outofmemory");
         }
     }
 

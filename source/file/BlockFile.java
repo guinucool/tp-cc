@@ -96,14 +96,8 @@ public abstract class BlockFile extends FSFile {
     /* Define o tamanho de um bloco do ficheiro com um valor já pré-definido */
     private void setBlocksize(int blocksize) throws FileException {
 
-        /* Descobre o máximo para este ficheiro */
-        int max = this.getMaxBlocks();
-
-        if (super.getSize() % blocksize != 0)
-            max--;
-
         /* Verifica se o blocksize fornecido é válido */
-        if (blocksize < 1 || super.getSize() / blocksize > max)
+        if (blocksize < 1)
             throw new FileException("blocksize-invalid");
 
         this.blocksize = blocksize;
@@ -148,7 +142,7 @@ public abstract class BlockFile extends FSFile {
     }
 
     /* Converte o ficheiro em formato binário */
-    public byte[] getBytes() throws FileException {
+    public byte[] getBytes() {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
@@ -162,7 +156,7 @@ public abstract class BlockFile extends FSFile {
             return barray.toByteArray();
 
         } catch (IOException e) {
-            throw new FileException("file-outofmemory");
+            throw new RuntimeException("file-outofmemory");
         }
     }
 

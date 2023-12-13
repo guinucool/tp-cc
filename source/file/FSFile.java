@@ -58,6 +58,8 @@ public abstract class FSFile {
 
     /* Define qual é a hash do ficheiro que é representado */
     private void setHash(String hash) throws FileException {
+
+        /* Verifica se a hash fornecida é válida */
         if (hash.equals(EMPTY_MD5) || hash.equals(""))
             throw new FileException("hash-invalid");
 
@@ -66,6 +68,8 @@ public abstract class FSFile {
 
     /* Define qual é o nome do ficheiro que é representado */
     public void setName(String name) throws FileException {
+
+        /* Verifica se o filename fornecido é válido */
         if (name.equals(""))
             throw new FileException("filename-invalid");
 
@@ -74,6 +78,8 @@ public abstract class FSFile {
 
     /* Define o tamanho do ficheiro que é representado */
     public void setSize(long size) throws FileException {
+
+        /* Verifica se o tamanho fornecido é válido */
         if (size <= 0)
             throw new FileException("size-invalid");
 
@@ -96,7 +102,7 @@ public abstract class FSFile {
     }
 
     /* Converte o ficheiro em formato binário */
-    public byte[] getBytes() throws FileException {
+    public byte[] getBytes() {
 
         ByteArrayOutputStream barray = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(barray);
@@ -111,7 +117,7 @@ public abstract class FSFile {
             return barray.toByteArray();
 
         } catch (IOException e) {
-            throw new FileException("file-outofmemory");
+            throw new RuntimeException("file-outofmemory");
         }
     }
 

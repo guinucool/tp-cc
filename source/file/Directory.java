@@ -63,7 +63,7 @@ public class Directory {
                     RegisterFile rfile = new RegisterFile(file);
                     this.files.put(rfile.getName(), rfile);
                 } catch (FileException e) {
-                    /* Não é preciso tratar a exceção */
+                    /* Ignora o ficheiro inválido */
                 }
             }
         }
@@ -128,7 +128,7 @@ public class Directory {
     }
 
     /* Envia os vários ficheiros no node através do runner para o tracker */
-    public void sendFiles(RequestManager manager, FrameRunner runner) throws DirectoryException, FileException, CommunicableException, RequestException {
+    public void sendFiles(RequestManager manager, FrameRunner runner) throws DirectoryException, CommunicableException, RequestException {
 
         /* Atualiza a diretoria */
         this.setFiles();

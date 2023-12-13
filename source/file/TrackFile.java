@@ -54,13 +54,8 @@ public class TrackFile extends BlockFile {
         int size = this.getNumBlocks();
 
         /* Vai criando e armazenando os vários blocos */
-        for (int i = 0; i < size; i++) {
-            try {
-                this.blocks.put(i, new Block(i));
-            } catch (BlockException e) {
-                /* Não é preciso tratar esta exceção */
-            }
-        }
+        for (int i = 0; i < size; i++)
+            this.blocks.put(i, new Block(i));
     }
 
     /* Adiciona um nodo a todos os blocos do ficheiro */
