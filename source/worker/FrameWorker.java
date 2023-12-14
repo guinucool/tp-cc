@@ -106,7 +106,7 @@ public class FrameWorker implements MessageWorker {
                     try {
 
                         /* Regista o ficheiro no tracker */
-                        controller.registerFile(data, 0);
+                        controller.registerFile(data, this.runner.getId());
 
                     } catch (UsedFilenameException e) {
 
@@ -205,7 +205,7 @@ public class FrameWorker implements MessageWorker {
         TrackerController controller = TrackerController.getInstance();
 
         /* Remove o node e tudo associado do tracker */
-        controller.disconnectNode(0);
+        controller.disconnectNode(this.runner.getId());
     }
 
     private void closeClient(boolean stable) {
