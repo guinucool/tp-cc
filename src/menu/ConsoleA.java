@@ -9,18 +9,18 @@ import client.ClientException.FilenameExistsException;
 
 import controller.ClientControl;
 import socket.RunnerException;
-import view.ClientView;
+import view.ConsoleClientView;
 
 public class ConsoleA {
 
     private ClientControl control;
-    private ClientView view;
+    private ConsoleClientView view;
     private Menu menu;
     
     /* Constructors */
     public Console(Client client) {
         this.control = new ClientControl(client);
-        this.view = new ClientView(client);
+        this.view = new ConsoleClientView(client);
 
         this.menu = new Menu();
         this.menu.addOption("UPDATE", 0);

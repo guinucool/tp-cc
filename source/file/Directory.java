@@ -121,9 +121,14 @@ public class Directory {
     /* Devolve um bloco pertencente a um ficheiro */
     public byte[] getBlock(String filename, long offset, int size) throws DirectoryException {
 
-        /* Verifica se o bloco pedido existe no ficheiro */
+        /* Verifica se o ficheiro está disponível para download */
+        if ((!this.files.containsKey(filename) && this.request == null) || (!this.files.containsKey(filename) && this.request != null && !this.request.getName().equals(filename)))
+            throw new DirectoryException("filename-invalid");
+
+        /* Cria o leitor do ficheiro */
         File file = new File(this.getPath() + filename);
 
+        /* Verifica se o bloco pedido existe no ficheiro */
         if (file.length() - offset - size < 0)
             throw new DirectoryException("block-undefined");
 
@@ -211,14 +216,14 @@ public class Directory {
     }
 
     /* Recebe partes de um ficheiro em download */
-    public void receiveFile(ResponseBlock block, Node node) throws DirectoryException, FileException {
+    public void receiveFile(ResponseBlock block, Node node, FrameRunner tcp, RequestManager manager) throws DirectoryException, FileException, RequestException, CommunicableException {
 
         /* Verifica se já foi definido o pedido de ficheiro */
         if (this.request == null)
             throw new DirectoryException("request-null");
 
         /* Incorpora o bloco no ficheiro em pedido */
-        this.request.receive(block, node, this.getPath());
+        this.request.receive(block, node, tcp, manager, this.getPath());
     }
 
     /* Converte a diretoria em formato string */

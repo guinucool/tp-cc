@@ -18,13 +18,14 @@ import file.block.ResponseBlock;
 import message.CommunicableException;
 import message.frame.FrameRequest;
 import runner.RunnerException;
+import runner.datagram.ReliableRunner;
 import runner.frame.FrameRunner;
 import server.RunnerServer;
 import server.ServerException;
 import worker.ServerWorker;
-import tools.Network;
 import tools.RequestException;
 import tools.RequestManager;
+import worker.DatagramWorker;
 import worker.FrameWorker;
 import worker.WorkerException;
 
@@ -37,6 +38,7 @@ public class Client {
 
     private Directory directory;                    /* Diretoria onde são armazenados os ficheiros do node */
     private FrameRunner tracker;                    /* Runner que liga o node ao tracker */
+    private ReliableRunner transfer;                /* Runner que liga o node com nodes */
     private RequestManager manager;                 /* Gesttor de pedidos de mensagens */
     private boolean status;                         /* Status do cliente node em relação ao servidor tracker */
 
@@ -50,6 +52,7 @@ public class Client {
     private Client(String path, String address) throws ClientException, DirectoryException {
         this.setDirectory(path);
         this.setTracker(address, 9090);
+        this.setTransfer(9090);
         this.manager = new RequestManager(requestWait);
         this.status = true;
     }
@@ -58,6 +61,7 @@ public class Client {
     private Client(String path, String address, int port) throws ClientException, DirectoryException {
         this.setDirectory(path);
         this.setTracker(address, port);
+        this.setTransfer(9090);
         this.manager = new RequestManager(requestWait);
         this.status = true;
     }
@@ -106,6 +110,24 @@ public class Client {
 
         } catch (IOException | RunnerException | ServerException | WorkerException e) {
             throw new ClientException("server-unreachable");
+        }
+    }
+
+    /* Define a ligação do cliente com o vários clientes */
+    private void setTransfer(int port) throws ClientException {
+
+        try {
+
+            /* Liga ao servidor e cria um runner para a ligação */
+            this.transfer = new ReliableRunner(port);
+            RunnerServer listener = new RunnerServer(tracker, new DatagramWorker(this.transfer));
+
+            /* Cria a thread que irá correr o servidor */
+            Thread worker = new Thread(new ServerWorker(listener));
+            worker.start();
+
+        } catch (RunnerException | ServerException | WorkerException e) {
+            throw new ClientException("transfer-unreachable");
         }
     }
 
@@ -199,14 +221,14 @@ public class Client {
     }
 
     /* Recebe um bloco de um ficheiro pedido */
-    public void receiveBlock(ResponseBlock block, Node node) throws DirectoryException, FileException {
+    public void receiveBlock(ResponseBlock block, Node node) throws DirectoryException, FileException, RequestException, CommunicableException {
 
         /* Bloqueia as operações de escrita e leitura */
         this.write.lock();
 
         /* Associa o pedido à diretoria */
         try {
-            this.directory.receiveFile(block, node);
+            this.directory.receiveFile(block, node, this.tracker, this.manager);
         } finally {
             this.write.unlock();
         }
@@ -285,7 +307,7 @@ public class Client {
         try {
 
             /* Devolve as informações em formato de node */
-            return new Node(Network.getLocalAddress(), 9090);
+            return new Node(this.transfer.getAddress(), this.transfer.getPort());
             
         } catch (NodeException e) {
 
@@ -356,7 +378,7 @@ public class Client {
     }
 
     /* Envia um pediod de ficheiro para o tracker */
-    public void requestFile(String filename) throws ClientException, CommunicableException {
+    public void requestFile(String filename) throws ClientException, CommunicableException, FileException {
 
         /* Bloqueia as operações de escrita e leitura */
         this.write.lock();
@@ -366,6 +388,9 @@ public class Client {
             /* Cria a mensagem de pedido */
             FrameRequest request = new FrameRequest((short) 202, filename.getBytes());
             this.manager.sendSequentialRequest(tracker, request);
+
+            /* Começa a transferência */
+            this.directory.requestFile(this.transfer, this.tracker, this.requestWait, this.manager);
 
         } catch(RequestException e) {
             this.close();
@@ -401,6 +426,7 @@ public class Client {
     /* Fecha este cliente sem controlo de concorrência */
     private void close() {
         this.tracker.close();
+        this.transfer.close();
 
         this.status = false;
 

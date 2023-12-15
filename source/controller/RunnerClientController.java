@@ -5,8 +5,10 @@ import file.FileException;
 import file.RequestFile;
 import file.block.Block;
 import file.block.BlockException;
+import file.block.ResponseBlock;
 import message.CommunicableException;
 import model.Client;
+import model.Node;
 import model.NodeException;
 import tools.RequestException;
 
@@ -68,5 +70,15 @@ public class RunnerClientController {
 
         /* Adiciona o bloco */
         this.client.addRequestBlock(block);
+    }
+
+    /* Recebe um bloco de um pedido de ficheiro */
+    public void receiveFileBlock(byte[] data, Node node) throws DirectoryException, BlockException, FileException, RequestException, CommunicableException {
+        
+        /* Cria a resposta de bloco do ficheiro em pedido */
+        ResponseBlock block = new ResponseBlock(data);
+
+        /* Recebe o bloco */
+        this.client.receiveBlock(block, node);
     }
 }

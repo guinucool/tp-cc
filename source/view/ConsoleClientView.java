@@ -6,21 +6,21 @@ import file.RegisterFile;
 import model.Client;
 import model.Node;
 
-public class ClientView {
+public class ConsoleClientView {
     
-    private static ClientView singleton;
+    private static ConsoleClientView singleton;
 
     private Client client;
 
-    private ClientView() {
+    private ConsoleClientView() {
         this.client = Client.getInstance();
     }
 
-    public static ClientView getInstance() {
+    public static ConsoleClientView getInstance() {
 
         /* Cria uma nova instância global deste controlador, caso não exista */
         if (singleton == null)
-            singleton = new ClientView();
+            singleton = new ConsoleClientView();
 
         /* Devolve a instância global */
         return singleton;

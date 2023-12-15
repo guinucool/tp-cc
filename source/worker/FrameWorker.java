@@ -234,6 +234,8 @@ public class FrameWorker implements MessageWorker {
 
                 /* Resolve o pedido em sucesso */
                 controller.solveRequest(this.frame.getIdentifier());
+
+                return;
             }
 
             /* Handler de mensagens de confirmação de ficheiros */
@@ -250,10 +252,13 @@ public class FrameWorker implements MessageWorker {
 
                     /* Atualiza o estado no cliente */
                     controller.notifyRepeteadFilename(filename);
+
                 }
 
                 /* Resolve o pedido em sucesso */
                 controller.solveRequest(this.frame.getIdentifier());
+
+                return;
             }
 
             /* Handler de mensagens com ficheiros pedidos */
@@ -267,6 +272,8 @@ public class FrameWorker implements MessageWorker {
 
                 /* Resolve o pedido em sucesso */
                 controller.solveRequest(this.frame.getIdentifier());
+
+                return;
             }
 
             /* Handler de mensagens com ficheiros pedidos inexistentes */
@@ -274,6 +281,8 @@ public class FrameWorker implements MessageWorker {
 
                 /* Resolve o pedido em sucesso */
                 controller.failRequest(this.frame.getIdentifier(), new CommunicableException("filename-inexistent"));
+
+                return;
             }
 
             /* Handler de mensagens de confirmação de ficheiros */
@@ -287,11 +296,15 @@ public class FrameWorker implements MessageWorker {
 
                 /* Resolve o pedido em sucesso */
                 controller.solveRequest(this.frame.getIdentifier());
+
+                return;
             }
             
         } catch (Exception e) {
-            this.runner.close();
+            /* Não é preciso tratar a exceção */
         }
+
+        this.runner.close();
     }
 
     /* Processo a executar no caso do fecho do runner */

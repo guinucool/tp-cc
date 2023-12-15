@@ -5,13 +5,14 @@ import java.util.List;
 import model.ClientException;
 import controller.ConsoleClientController;
 import file.DirectoryException;
+import file.FileException;
 import message.CommunicableException;
-import view.ClientView;
+import view.ConsoleClientView;
 
 public class Console {
 
     private ConsoleClientController control;
-    private ClientView view;
+    private ConsoleClientView view;
     private Menu menu;
     private boolean quit;
     
@@ -19,7 +20,7 @@ public class Console {
     public Console() {
 
         this.control = ConsoleClientController.getInstance();
-        this.view = ClientView.getInstance();
+        this.view = ConsoleClientView.getInstance();
         this.quit = false;
 
         this.menu = new Menu();
@@ -79,8 +80,11 @@ public class Console {
                 /* Processo de envio e verificação de envio */
                 try {
                     this.control.requestFile(args.get(1));
+                    System.out.println("File downloaded sucessfully!");
                 } catch (CommunicableException e) {
-                    System.out.println("The file you requested does not exist!");
+                    System.out.println("The requested file does not exist!");
+                } catch (FileException e) {
+                    System.out.println("The requested file has insufficient nodes to be download!");
                 }
             }
 

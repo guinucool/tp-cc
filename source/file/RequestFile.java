@@ -310,7 +310,7 @@ public class RequestFile extends BlockFile {
     }
 
     /* Recebe blocos do ficheiro */
-    public void receive(ResponseBlock block, Node node, String path) throws FileException {
+    public void receive(ResponseBlock block, Node node, FrameRunner tcp, RequestManager manager, String path) throws FileException, RequestException, CommunicableException {
 
         /* Obtém o offset em sequencial */
         int nroffset = (int) block.getOffset() / super.getBlocksize();
@@ -329,6 +329,13 @@ public class RequestFile extends BlockFile {
         } catch (IOException e) {
             throw new RuntimeException("file-unwritable");
         }
+
+        /* Cria os argumentos */
+        List<byte[]> args = new ArrayList<>(Arrays.asList(super.getName().getBytes(), ByteBuffer.allocate(4).putInt(nroffset).array()));
+
+        /* Envia informação de obtenção de bloco ao tracker */
+        FrameRequest request = new FrameRequest((short) 300, args);
+        manager.sendSequentialRequest(tcp, request);
 
         /* Atualiza as utilizações e as estatísticas */
         this.decrementNodeUsage(node);

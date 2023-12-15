@@ -2,6 +2,7 @@ package controller;
 
 import model.ClientException;
 import file.DirectoryException;
+import file.FileException;
 import message.CommunicableException;
 import model.Client;
 
@@ -36,7 +37,7 @@ public class ConsoleClientController {
     }
 
     /* Pede informações relativas a um ficheiro para download do tracker */
-    public void requestFile(String filename) throws CommunicableException, ClientException {
+    public void requestFile(String filename) throws CommunicableException, ClientException, FileException {
         this.client.requestFile(filename);
     }
 
