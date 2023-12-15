@@ -8,6 +8,7 @@ import controller.TrackerController;
 import file.DirectoryException;
 import message.CommunicableException;
 import message.Message;
+import message.Communicable.Operation;
 import message.frame.Frame;
 import model.TrackerException.UsedFilenameException;
 import runner.Runner;
@@ -74,6 +75,10 @@ public class FrameWorker implements MessageWorker {
 
         /* Procura por erros na interpretação */
         try {
+
+            /* Verifica se o frame recebido é um pedido */
+            if (this.frame.getOperation() != Operation.QUERY)
+                throw new Exception("frame-response");
             
             /* Handler de registos de nodes */
             if (this.frame.getFlag() == 100 && this.frame.getNrArguments() == 1) {
@@ -151,6 +156,10 @@ public class FrameWorker implements MessageWorker {
 
         try {
 
+            /* Verifica se o frame recebido é uma resposta */
+            if (this.frame.getOperation() != Operation.RESPONSE)
+                throw new RequestException("frame-query");
+
             /* Handler de mensagens de confirmação */
             if (this.frame.getFlag() == 0) {
 
@@ -162,7 +171,7 @@ public class FrameWorker implements MessageWorker {
             if (this.frame.getFlag() == 201) {
                 
                 /* Resolve o pedido em sucesso */
-                controller.solveRequest(this.frame.getIdentifier());
+                controller.solveRequest(this.frame.getIdentifier());    /* Mudar de posição para o fim */
 
                 /* Retira o payload da mensagem */
                 List<byte[]> payload = this.frame.getPayloadList();

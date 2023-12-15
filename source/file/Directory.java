@@ -69,6 +69,11 @@ public class Directory {
         }
     }
 
+    /* Define o ficheiro para download */
+    public void setRequest() {
+        
+    }
+
     /* Devolve a diretoria em que o node está correr */
     public String getPath() {
         return this.directory.getAbsolutePath();
@@ -157,6 +162,16 @@ public class Directory {
 
         /* Atualiza o estado */
         this.files.get(filename).setStatus(2);
+    }
+
+    /* Pede um ficheiro para download */
+    public void requestFile() {
+
+    }
+
+    /* Recebe partes de um ficheiro em download */
+    public void receiveFile() {
+
     }
 
     /* Converte a diretoria em formato string */

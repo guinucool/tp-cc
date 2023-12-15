@@ -115,4 +115,9 @@ public class Node {
 
         return builder.toString();
     }
+
+    /* Devolve o hash code do node */
+    public int hashCode() {
+        return this.address.hashCode() + this.port;
+    }
 }
