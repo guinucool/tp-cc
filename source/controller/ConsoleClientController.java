@@ -37,7 +37,7 @@ public class ConsoleClientController {
     }
 
     /* Pede informações relativas a um ficheiro para download do tracker */
-    public void requestFile(String filename) throws CommunicableException, ClientException, FileException {
+    public void requestFile(String filename) throws CommunicableException, ClientException, FileException, DirectoryException {
         this.client.requestFile(filename);
     }
 

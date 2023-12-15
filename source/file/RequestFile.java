@@ -1,9 +1,8 @@
 package file;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -83,12 +82,12 @@ public class RequestFile extends BlockFile {
 
     /* Aumenta a potuanção de um node */
     private void incrementNodeScore(Node node) {
-        this.statistics.put(node, this.statistics.get(node) + 1);
+        this.statistics.put(node, this.getNodeScore(node) + 1);
     }
 
     /* Aumenta o uso de um node */
     private void incrementNodeUsage(Node node) {
-        this.usage.put(node, this.usage.get(node) + 1);
+        this.usage.put(node, this.getNodeUsage(node) + 1);
     }
 
     /* Diminui o uso de um node */
@@ -96,7 +95,7 @@ public class RequestFile extends BlockFile {
 
         /* Apenas subtrai se existerem usos do node */
         if (this.usage.get(node) > 0)
-            this.usage.put(node, this.usage.get(node) - 1);
+            this.usage.put(node, this.getNodeUsage(node) - 1);
     }
 
     /* Calcula a pontuaçao média global */
@@ -111,6 +110,9 @@ public class RequestFile extends BlockFile {
             global += score;
 
         /* Devolve a média */
+        if (nodes == 0)
+            return 0;
+
         return (global / nodes);
     }
 
@@ -122,16 +124,27 @@ public class RequestFile extends BlockFile {
         int global = this.requests.size();
 
         /* Devolve a média */
+        if (nodes == 0)
+            return 0;
+
         return (global / nodes);
     }
 
     /* Encontra a pontuanção de um node em específico */
     private int getNodeScore(Node node) {
+
+        if (!this.statistics.containsKey(node))
+            return 0;
+
         return this.statistics.get(node);
     }
 
     /* Encontra o uso de um node em específico */
     private int getNodeUsage(Node node) {
+
+        if (!this.usage.containsKey(node))
+            return 0;
+
         return this.usage.get(node);
     }
 
@@ -145,7 +158,7 @@ public class RequestFile extends BlockFile {
         int avUsage = this.getAverageUsage();
 
         /* Caso nunca tenha sido usado, esse node será a escolha */
-        if (score == 0 && usage == 0)
+        if (score == 0 && usage == 0 || avScore == 0)
             return Integer.MAX_VALUE;
 
         /* Performance em pontuação */
@@ -178,16 +191,26 @@ public class RequestFile extends BlockFile {
 
     /* Remove pedidos falhados e coloca-os de novo nos disponíveis */
     private void removeFailedRequests() throws RequestException {
-        for (Map.Entry<Integer,Requestable> block : this.requests.entrySet()) {
-            if (block.getValue().isFailed()) {
+
+        for (Map.Entry<Integer,Requestable> block : (new HashMap<>(this.requests)).entrySet()) {
+
+            /* Remove o pedido se já estiver resolvido */
+            if (block.getValue().isResolved())
+                this.requests.remove(block.getKey());
+
+            /* Obtém o bloco em si */
+            DatagramRequest req = (DatagramRequest) block.getValue();
+
+            /* Investiga se foi resolvido em falhanço */
+            if (req.isFailed()) {
 
                 /* Verifica a razão do falhanço */
                 try {
-                    this.requests.remove(block.getKey()).exceptionThrow();
+                    req.exceptionThrow();
                 } catch (CommunicableException e) {
                     this.available.add(block.getKey());
-                    this.usage.remove(((DatagramRequest) block.getValue()).getNode());
-                    this.disconnected.add(((DatagramRequest) block.getValue()).getNode());
+                    this.usage.remove(req.getNode());
+                    this.disconnected.add(req.getNode());
                 } catch (Exception e) {
                     throw new RequestException(e.getMessage());
                 }
@@ -281,7 +304,7 @@ public class RequestFile extends BlockFile {
 
         /* Verifica se existem pedidos ou blocos em stand by */
         while (this.requests.size() * super.getBlocksize() > MAX_SIZE || (this.available.size() == 0 && this.requests.size() != 0)) {
-            
+
             /* Espera por mundanças ou pelo timeout */
             try {
                 requestWait.await(5, TimeUnit.SECONDS);   
@@ -321,11 +344,15 @@ public class RequestFile extends BlockFile {
 
         /* Escreve no ficheiro já criado */
         try {
-            FileOutputStream stream = new FileOutputStream(path + "/" + super.getName());
-            FileChannel channel = stream.getChannel();
-            channel.position(block.getOffset());
-            channel.write(ByteBuffer.wrap(block.getData()));   
-            stream.close();
+            RandomAccessFile writer = new RandomAccessFile(path + "/" + super.getName(), "rw");
+
+            /* Iniciar no offset */
+            writer.seek(block.getOffset());
+
+            /* Escrever informação */
+            writer.write(block.getData());   
+            writer.close();
+
         } catch (IOException e) {
             throw new RuntimeException("file-unwritable");
         }

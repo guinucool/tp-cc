@@ -167,7 +167,7 @@ public class FrameWorker implements MessageWorker {
                 byte[] argument = view.getBlock(payload);
 
                 /* Envia a resposta de novo para o node */
-                this.runner.send(new Frame(this.frame.getIdentifier(), (short) 204, argument));
+                this.runner.send(new Frame(this.frame.getIdentifier(), (short) 205, argument));
 
                 /* Impede a interpretação de continuar */
                 return;
@@ -285,7 +285,7 @@ public class FrameWorker implements MessageWorker {
                 return;
             }
 
-            /* Handler de mensagens de confirmação de ficheiros */
+            /* Handler de mensagens de blocos de ficheiros */
             if (this.frame.getFlag() == 205 && this.frame.getNrArguments() == 1) {
 
                 /* Retira o payload da mensagem */

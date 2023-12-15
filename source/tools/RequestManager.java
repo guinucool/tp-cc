@@ -70,7 +70,7 @@ public class RequestManager {
     public void failAllRequest(RunnerException e) {
 
         /* Falha todos os pedidos existentes */
-        for (Short identifier : this.requests.keySet())
+        for (Short identifier : (new HashMap<>(this.requests)).keySet())
             this.requests.remove(identifier).fail(e);
 
         this.requestWait.signalAll();

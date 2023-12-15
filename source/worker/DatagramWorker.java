@@ -78,7 +78,7 @@ public class DatagramWorker implements MessageWorker {
                         byte[] data = view.getFileBlock(payload);
 
                         /* Envia o bloco pretendido */
-                        this.runner.send(new Datagram((short) 200, data, datagram.getNode()));
+                        this.runner.send(new Datagram(this.datagram.getIdentifier(), (short) 200, data, datagram.getNode()));
 
                     } catch (DirectoryException | BlockException e) {
                         /* Não é preciso tratar a exceção */
@@ -102,6 +102,9 @@ public class DatagramWorker implements MessageWorker {
                         /* Recebe o bloco no cliente */
                         controller.receiveFileBlock(payload, this.datagram.getNode());
 
+                        /* Resolve o pedido no sistema */
+                        controller.solveRequest(this.datagram.getIdentifier());
+
                     } catch (DirectoryException | BlockException | FileException e) {
                         /* Não é preciso tratar a exceção */
                     }
@@ -120,7 +123,7 @@ public class DatagramWorker implements MessageWorker {
 
     /* Processo a executar no caso do fecho do runner */
     public void close(boolean stable) {
-        
+
         /* Vai buscar o controlador do cliente */
         RunnerClientController controller = RunnerClientController.getInstance();
 

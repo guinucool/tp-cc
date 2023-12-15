@@ -102,7 +102,12 @@ public class Frame extends Message {
             throw new RuntimeException("payload-big");
         
         this.nrarguments = (short) payload.size();
-        this.payload = Message.listToPayload(payload);
+
+        /* Transforma o payload consoante o número de elementos */
+        if (this.nrarguments == 1)
+            this.payload = payload.get(0).clone();
+        else
+            this.payload = Message.listToPayload(payload);
     }
 
     /* Definição e verificação do frame */

@@ -102,7 +102,7 @@ public class Client {
             /* Liga ao servidor e cria um runner para a ligação */
             Socket server = new Socket(address, port);
             this.tracker = new FrameRunner(server);
-            RunnerServer listener = new RunnerServer(tracker, new FrameWorker(this.tracker, false));
+            RunnerServer listener = new RunnerServer(this.tracker, new FrameWorker(this.tracker, false));
 
             /* Cria a thread que irá correr o servidor */
             Thread worker = new Thread(new ServerWorker(listener));
@@ -120,7 +120,7 @@ public class Client {
 
             /* Liga ao servidor e cria um runner para a ligação */
             this.transfer = new ReliableRunner(port);
-            RunnerServer listener = new RunnerServer(tracker, new DatagramWorker(this.transfer));
+            RunnerServer listener = new RunnerServer(this.transfer, new DatagramWorker(this.transfer));
 
             /* Cria a thread que irá correr o servidor */
             Thread worker = new Thread(new ServerWorker(listener));
@@ -378,7 +378,7 @@ public class Client {
     }
 
     /* Envia um pediod de ficheiro para o tracker */
-    public void requestFile(String filename) throws ClientException, CommunicableException, FileException {
+    public void requestFile(String filename) throws ClientException, CommunicableException, FileException, DirectoryException {
 
         /* Bloqueia as operações de escrita e leitura */
         this.write.lock();

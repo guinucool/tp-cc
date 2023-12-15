@@ -126,7 +126,7 @@ public class Directory {
             throw new DirectoryException("filename-invalid");
 
         /* Cria o leitor do ficheiro */
-        File file = new File(this.getPath() + filename);
+        File file = new File(this.getPath() + "/" + filename);
 
         /* Verifica se o bloco pedido existe no ficheiro */
         if (file.length() - offset - size < 0)
@@ -198,11 +198,24 @@ public class Directory {
     }
 
     /* Pede um ficheiro para download */
-    public void requestFile(ReliableRunner udp, FrameRunner tcp, Condition wait, RequestManager manager) throws FileException, RequestException, CommunicableException {
+    public void requestFile(ReliableRunner udp, FrameRunner tcp, Condition wait, RequestManager manager) throws FileException, RequestException, CommunicableException, DirectoryException {
 
         /* Verifica se já foi definido o pedido de ficheiro */
         if (this.request == null)
             throw new RuntimeException("request-null");
+
+        /* Cria o ficheiro */
+        File file = new File(this.getPath() + "/" + this.request.getName());
+
+        try {
+
+            /* Verifica se o ficheiro já existe */
+            if (!file.createNewFile())
+                throw new DirectoryException("file-exists");
+
+        } catch (IOException e) {
+            throw new RuntimeException("file-uncreatable");
+        }
 
         /* Pede o ficheiro */
         this.request.request(udp, tcp, wait, manager);

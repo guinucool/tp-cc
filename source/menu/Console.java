@@ -85,7 +85,9 @@ public class Console {
                     System.out.println("The requested file does not exist!");
                 } catch (FileException e) {
                     System.out.println("The requested file has insufficient nodes to be download!");
-                }
+                } catch (DirectoryException e) {
+                    System.out.println("The requested file already exists in the node!");
+                } 
             }
 
             /* Handler do comando "FILES" */

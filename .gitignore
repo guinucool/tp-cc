@@ -2,5 +2,7 @@
 /Test2.java
 *.class
 test/*
+test2/*
+test3/*
 source/C.java
 source/S.java
