@@ -46,6 +46,12 @@ public class RegisterFile extends FSFile {
         this.status = file.status;
     }
 
+    /* Construtor de pedido */
+    public RegisterFile(RequestFile file) {
+        super(file);
+        this.status = 0;
+    }
+
     /* Definição do status do ficheiro */
     public void setStatus(int status) {
         this.status = status;

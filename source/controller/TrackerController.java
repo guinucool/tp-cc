@@ -1,5 +1,8 @@
 package controller;
 
+import java.nio.ByteBuffer;
+import java.util.List;
+
 import file.FileException;
 import file.TrackFile;
 import file.block.BlockException;
@@ -51,6 +54,17 @@ public class TrackerController {
 
         /* Insere o ficheiro e associa o node */
         this.tracker.addFile(id, file);
+    }
+
+    /* Regista um node num bloco de um ficheiro no tracker */
+    public void registerBlock(List<byte[]> data, int id) throws FileException, TrackerException, BlockException {
+
+        /* Retira a informação da lista de informação recebida */
+        String filename = new String(data.get(0));
+        int offset = ByteBuffer.wrap(data.get(1)).getInt();
+
+        /* Associa o node ao bloco */
+        this.tracker.addNodeToFile(id, filename, offset);
     }
 
     /* Destroi um node de todos os ficheiros onde está presente */

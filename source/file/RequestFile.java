@@ -47,6 +47,7 @@ public class RequestFile extends BlockFile {
         this.statistics = new HashMap<>();
         this.requests = new HashMap<>();
         this.usage = new HashMap<>();
+        this.disconnected = new ArrayList<>();
     }
 
     /* Construtor de cópia */
@@ -56,6 +57,7 @@ public class RequestFile extends BlockFile {
         this.statistics = new HashMap<>();
         this.requests = new HashMap<>();
         this.usage = new HashMap<>();
+        this.disconnected = new ArrayList<>();
     }
 
     /* Construtor binário */
@@ -65,6 +67,7 @@ public class RequestFile extends BlockFile {
         this.statistics = new HashMap<>();
         this.requests = new HashMap<>();
         this.usage = new HashMap<>();
+        this.disconnected = new ArrayList<>();
     }
 
     /* Define a lista de blocos disponíveis */
@@ -235,7 +238,7 @@ public class RequestFile extends BlockFile {
         List<byte[]> args = new ArrayList<>(Arrays.asList(super.getName().getBytes(), ByteBuffer.allocate(4).putInt(block).array()));
 
         /* Cria a mensagem de pedido para informação */
-        FrameRequest request = new FrameRequest((short) 100, args);
+        FrameRequest request = new FrameRequest((short) 203, args);
         manager.sendSequentialRequest(tcprunner, request);
 
         /* Variáveis auxiliarers */
@@ -353,6 +356,43 @@ public class RequestFile extends BlockFile {
         StringBuilder builder = new StringBuilder();
 
         builder.append("(Request)").append(super.toString());
+        builder.append("statistics:");
+
+        for (Map.Entry<Node, Integer> register : this.statistics.entrySet()) {
+            builder.append(" key:").append(register.getKey());
+            builder.append(" value:").append(register.getValue());
+        }
+
+        builder.append(";");
+        builder.append("available:");
+
+        for (Integer block : this.available)
+            builder.append(" ").append(block);
+
+        builder.append(";");
+        builder.append("requests:");
+
+        for (Map.Entry<Integer, Requestable> register : this.requests.entrySet()) {
+            builder.append(" key:").append(register.getKey());
+            builder.append(" value:").append(register.getValue());
+        }
+
+        builder.append(";");
+        builder.append("usage:");
+
+        for (Map.Entry<Node, Integer> register : this.usage.entrySet()) {
+            builder.append(" key:").append(register.getKey());
+            builder.append(" value:").append(register.getValue());
+        }
+
+        builder.append(";");
+        builder.append("disconnected:");
+
+        for (Node node : this.disconnected)
+            builder.append(" ").append(node.toString());
+
+        builder.append(";");
+        builder.append("block:").append(this.current).append(";");
 
         return builder.toString();
     }

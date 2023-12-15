@@ -6,7 +6,7 @@ import message.TrackMessage.Type;
 import model.tracker.Tracker;
 import model.tracker.TrackerException;
 
-public class TrackerView {
+public class TrackerViewA {
 
     private Tracker tracker;
 

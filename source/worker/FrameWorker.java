@@ -5,14 +5,16 @@ import java.util.List;
 
 import controller.RunnerClientController;
 import controller.TrackerController;
-import file.DirectoryException;
 import message.CommunicableException;
 import message.Message;
 import message.Communicable.Operation;
 import message.frame.Frame;
+import model.TrackerException;
 import model.TrackerException.UsedFilenameException;
 import runner.Runner;
 import tools.RequestException;
+import view.RunnerClientView;
+import view.TrackerView;
 
 /**
  * Objeto que define o interpretador de mensagens do tracker.
@@ -73,6 +75,9 @@ public class FrameWorker implements MessageWorker {
         /* Vai buscar o controlador do tracker */
         TrackerController controller = TrackerController.getInstance();
 
+        /* Vai buscar o view do tracker */
+        TrackerView view = TrackerView.getInstance();
+
         /* Procura por erros na interpretação */
         try {
 
@@ -93,7 +98,7 @@ public class FrameWorker implements MessageWorker {
                 return;
             }
 
-            /* Handler de registos de nodes */
+            /* Handler de registos de ficheiros */
             if (this.frame.getFlag() == 200) {
 
                 /* Pega em todos os argumentos da mensagem */
@@ -127,6 +132,63 @@ public class FrameWorker implements MessageWorker {
                 return;
             }
 
+            /* Handler de pedidos de ficheiros */
+            if (this.frame.getFlag() == 202 && this.frame.getNrArguments() == 1) {
+
+                /* Pega em todos os argumentos da mensagem */
+                byte[] payload = this.frame.getPayload();
+
+                try {
+
+                    /* Tenta recuperar o ficheiro do tracker */
+                    byte[] argument = view.getFile(payload);
+
+                    /* Envia a resposta de novo para o node */
+                    this.runner.send(new Frame(this.frame.getIdentifier(), (short) 204, argument));
+                    
+                } catch (TrackerException e) {
+
+                    /* Envia a resposta de novo para o node */
+                    this.runner.send(new Frame(this.frame.getIdentifier(), (short) 204));
+                }
+                
+
+                /* Impede a interpretação de continuar */
+                return;
+            }
+
+            /* Handler de blocos de pedidos de ficheiros */
+            if (this.frame.getFlag() == 203 && this.frame.getNrArguments() == 2) {
+
+                /* Pega em todos os argumentos da mensagem */
+                List<byte[]> payload = this.frame.getPayloadList();
+
+                /* Tenta recuperar o ficheiro do tracker */
+                byte[] argument = view.getBlock(payload);
+
+                /* Envia a resposta de novo para o node */
+                this.runner.send(new Frame(this.frame.getIdentifier(), (short) 204, argument));
+
+                /* Impede a interpretação de continuar */
+                return;
+            }
+
+            /* Handler de registo do node em blocos de ficheiros */
+            if (this.frame.getFlag() == 300 && this.frame.getNrArguments() == 2) {
+
+                /* Pega em todos os argumentos da mensagem */
+                List<byte[]> payload = this.frame.getPayloadList();
+
+                /* Tenta recuperar o ficheiro do tracker */
+                controller.registerBlock(payload, this.runner.getId());
+
+                /* Envia a resposta de novo para o node */
+                this.runner.send(new Frame(this.frame.getIdentifier(), (short) 0));
+
+                /* Impede a interpretação de continuar */
+                return;
+            }
+
             /* Handler de desconexão */
             if (this.frame.getFlag() == 101 && this.frame.getNrArguments() == 0) {
 
@@ -154,11 +216,18 @@ public class FrameWorker implements MessageWorker {
         /* Vai buscar o controlador do cliente */
         RunnerClientController controller = RunnerClientController.getInstance();
 
+        /* Vai buscar o view do cliente */
+        RunnerClientView view = RunnerClientView.getInstance();
+
         try {
 
             /* Verifica se o frame recebido é uma resposta */
             if (this.frame.getOperation() != Operation.RESPONSE)
                 throw new RequestException("frame-query");
+
+            /* Verifica se o frame recebido tem um pedido */
+            if (!view.hasRequest(this.frame.getIdentifier()))
+                throw new RequestException("frame-unrequested");
 
             /* Handler de mensagens de confirmação */
             if (this.frame.getFlag() == 0) {
@@ -169,9 +238,6 @@ public class FrameWorker implements MessageWorker {
 
             /* Handler de mensagens de confirmação de ficheiros */
             if (this.frame.getFlag() == 201) {
-                
-                /* Resolve o pedido em sucesso */
-                controller.solveRequest(this.frame.getIdentifier());    /* Mudar de posição para o fim */
 
                 /* Retira o payload da mensagem */
                 List<byte[]> payload = this.frame.getPayloadList();
@@ -185,9 +251,45 @@ public class FrameWorker implements MessageWorker {
                     /* Atualiza o estado no cliente */
                     controller.notifyRepeteadFilename(filename);
                 }
+
+                /* Resolve o pedido em sucesso */
+                controller.solveRequest(this.frame.getIdentifier());
+            }
+
+            /* Handler de mensagens com ficheiros pedidos */
+            if (this.frame.getFlag() == 204 && this.frame.getNrArguments() == 1) {
+
+                /* Retira o payload da mensagem */
+                byte[] payload = this.frame.getPayload();
+
+                /* Atualiza o ficheiro em pedido */
+                controller.receiveFile(payload);
+
+                /* Resolve o pedido em sucesso */
+                controller.solveRequest(this.frame.getIdentifier());
+            }
+
+            /* Handler de mensagens com ficheiros pedidos inexistentes */
+            if (this.frame.getFlag() == 204 && this.frame.getNrArguments() == 0) {
+
+                /* Resolve o pedido em sucesso */
+                controller.failRequest(this.frame.getIdentifier(), new CommunicableException("filename-inexistent"));
+            }
+
+            /* Handler de mensagens de confirmação de ficheiros */
+            if (this.frame.getFlag() == 205 && this.frame.getNrArguments() == 1) {
+
+                /* Retira o payload da mensagem */
+                byte[] payload = this.frame.getPayload();
+
+                /* Atualiza a informação do bloco no ficheiro em pedido */
+                controller.receiveBlock(payload);
+
+                /* Resolve o pedido em sucesso */
+                controller.solveRequest(this.frame.getIdentifier());
             }
             
-        } catch (RequestException | CommunicableException | DirectoryException e) {
+        } catch (Exception e) {
             this.runner.close();
         }
     }

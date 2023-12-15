@@ -49,7 +49,7 @@ public class ClientView {
 
             /* Em caso de falha de envio */
             if (file.getStatus() == 1)
-                System.out.println("The file " + file.getName() + "could not be sent... Please try again!");
+                System.out.println("The file " + file.getName() + " could not be sent... Please try again!");
 
             /* Muda o estado global */
             if (file.getStatus() != 0)

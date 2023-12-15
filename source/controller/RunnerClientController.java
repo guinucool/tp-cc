@@ -1,8 +1,13 @@
 package controller;
 
 import file.DirectoryException;
+import file.FileException;
+import file.RequestFile;
+import file.block.Block;
+import file.block.BlockException;
 import message.CommunicableException;
 import model.Client;
+import model.NodeException;
 import tools.RequestException;
 
 public class RunnerClientController {
@@ -45,11 +50,23 @@ public class RunnerClientController {
         this.client.updateFileStatus(filename);
     }
 
-    public void receiveFile(byte[] data) {
+    /* Recebe um ficheiro para pedido */
+    public void receiveFile(byte[] data) throws FileException {
 
+        /* Cria o pedido de ficheiro */
+        RequestFile file = new RequestFile(data);
+
+        /* Adiciona o ficheiro */
+        this.client.addRequestFile(file);
     }
 
-    public void receiveBlock(byte[] data) {
+    /* Recebe um bloco de um ficheiro em pedido */
+    public void receiveBlock(byte[] data) throws BlockException, NodeException, DirectoryException, FileException {
         
+        /* Cria o bloco do ficheiro em pedido */
+        Block block = new Block(data);
+
+        /* Adiciona o bloco */
+        this.client.addRequestBlock(block);
     }
 }

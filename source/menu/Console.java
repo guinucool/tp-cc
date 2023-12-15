@@ -5,6 +5,7 @@ import java.util.List;
 import model.ClientException;
 import controller.ConsoleClientController;
 import file.DirectoryException;
+import message.CommunicableException;
 import view.ClientView;
 
 public class Console {
@@ -22,10 +23,11 @@ public class Console {
         this.quit = false;
 
         this.menu = new Menu();
-        this.menu.addOption("UPDATE", 0);
         this.menu.addOption("PATH", 0);
         this.menu.addOption("ADDRESS", 0);
         this.menu.addOption("FILES", 0);
+        this.menu.addOption("UPDATE", 0);
+        this.menu.addOption("REQUEST", 1);
         this.menu.addOption("HELP", 0);
     }
 
@@ -68,6 +70,17 @@ public class Console {
                     this.view.printFileState();
                 } catch (DirectoryException e) {
                     System.out.println("There are no files available to be sent!");
+                }
+            }
+
+            /* Handler do comando "REQUEST" */
+            if (cmd.equals("REQUEST")) {
+
+                /* Processo de envio e verificação de envio */
+                try {
+                    this.control.requestFile(args.get(1));
+                } catch (CommunicableException e) {
+                    System.out.println("The file you requested does not exist!");
                 }
             }
 

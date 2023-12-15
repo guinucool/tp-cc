@@ -8,9 +8,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Condition;
 
+import file.block.Block;
+import file.block.ResponseBlock;
 import message.CommunicableException;
 import message.frame.FrameRequest;
+import model.Node;
+import runner.datagram.ReliableRunner;
 import runner.frame.FrameRunner;
 import tools.RequestException;
 import tools.RequestManager;
@@ -22,6 +27,7 @@ public class Directory {
     
     private File directory;                     /* Diretoria pretendida pronta para leitura */
     private Map<String,RegisterFile> files;     /* Ficheiros lidos da diretoria */
+    private RequestFile request;                /* Ficheiro atual para download */
 
     /* Construtor vazio */
     public Directory() {
@@ -70,8 +76,19 @@ public class Directory {
     }
 
     /* Define o ficheiro para download */
-    public void setRequest() {
-        
+    public void setRequest(RequestFile file) {
+        this.request = (RequestFile) file.clone();
+    }
+
+    /* Recebe informação sobre o bloco e coloca-a no pedido */
+    public void setCurrent(Block block) throws FileException, DirectoryException {
+
+        /* Verifica se já foi definido o pedido de ficheiro */
+        if (this.request == null)
+            throw new DirectoryException("request-null");
+
+        /* Incorpora a informação do bloco no ficheiro em pedido */
+        this.request.receive(block);
     }
 
     /* Devolve a diretoria em que o node está correr */
@@ -132,6 +149,17 @@ public class Directory {
         }
     }
 
+    /* Devolve o ficheiro em pedido do momento */
+    public RequestFile getRequest() throws DirectoryException {
+
+        /* Verifica se já foi definido o pedido de ficheiro */
+        if (this.request == null)
+            throw new DirectoryException("request-null");
+
+        /* Devolve o pedido */
+        return (RequestFile) this.request.clone();
+    }
+
     /* Envia os vários ficheiros no node através do runner para o tracker */
     public void sendFiles(RequestManager manager, FrameRunner runner) throws DirectoryException, CommunicableException, RequestException {
 
@@ -165,13 +193,32 @@ public class Directory {
     }
 
     /* Pede um ficheiro para download */
-    public void requestFile() {
+    public void requestFile(ReliableRunner udp, FrameRunner tcp, Condition wait, RequestManager manager) throws FileException, RequestException, CommunicableException {
 
+        /* Verifica se já foi definido o pedido de ficheiro */
+        if (this.request == null)
+            throw new RuntimeException("request-null");
+
+        /* Pede o ficheiro */
+        this.request.request(udp, tcp, wait, manager);
+
+        /* Atualiza a lista de ficheiros */
+        RegisterFile rfile = new RegisterFile(this.request);
+        this.files.put(rfile.getName(), rfile);
+
+        /* Apaga o pedido */
+        this.request = null;
     }
 
     /* Recebe partes de um ficheiro em download */
-    public void receiveFile() {
+    public void receiveFile(ResponseBlock block, Node node) throws DirectoryException, FileException {
 
+        /* Verifica se já foi definido o pedido de ficheiro */
+        if (this.request == null)
+            throw new DirectoryException("request-null");
+
+        /* Incorpora o bloco no ficheiro em pedido */
+        this.request.receive(block, node, this.getPath());
     }
 
     /* Converte a diretoria em formato string */
@@ -189,6 +236,8 @@ public class Directory {
         }
 
         builder.append(";");
+
+        builder.append("request:").append(this.request.toString()).append(";");
 
         return builder.toString();
     }

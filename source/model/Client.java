@@ -10,7 +10,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import file.Directory;
 import file.DirectoryException;
+import file.FileException;
 import file.RegisterFile;
+import file.RequestFile;
+import file.block.Block;
+import file.block.ResponseBlock;
 import message.CommunicableException;
 import message.frame.FrameRequest;
 import runner.RunnerException;
@@ -84,16 +88,6 @@ public class Client {
     /* Define a diretoria que vai ser usada pelo cliente */
     private void setDirectory(String path) throws DirectoryException {
         this.directory = new Directory(path);
-    }
-
-    /* Adiciona um pedido de ficheiro à diretoria */
-    public void addRequestFile() {
-
-    }
-
-    /* Adiciona um bloco ao sistema */
-    public void addRequestedBlock() {
-
     }
 
     /* Define a ligação do cliente com o tracker */
@@ -174,6 +168,45 @@ public class Client {
             /* Atualiza o estado do ficheiro */
             this.directory.updateFileStatus(filename);   
 
+        } finally {
+            this.write.unlock();
+        }
+    }
+
+    /* Adiciona um pedido de ficheiro à diretoria */
+    public void addRequestFile(RequestFile file) {
+
+        /* Bloqueia as operações de escrita e leitura */
+        this.write.lock();
+
+        /* Associa o pedido à diretoria */
+        this.directory.setRequest(file);
+        this.write.unlock();
+    }
+
+    /* Adiciona um bloco ao sistema */
+    public void addRequestBlock(Block current) throws DirectoryException, FileException {
+
+        /* Bloqueia as operações de escrita e leitura */
+        this.write.lock();
+
+        /* Associa o pedido à diretoria */
+        try {
+            this.directory.setCurrent(current);
+        } finally {
+            this.write.unlock();
+        }
+    }
+
+    /* Recebe um bloco de um ficheiro pedido */
+    public void receiveBlock(ResponseBlock block, Node node) throws DirectoryException, FileException {
+
+        /* Bloqueia as operações de escrita e leitura */
+        this.write.lock();
+
+        /* Associa o pedido à diretoria */
+        try {
+            this.directory.receiveFile(block, node);
         } finally {
             this.write.unlock();
         }
@@ -331,7 +364,7 @@ public class Client {
         try {
 
             /* Cria a mensagem de pedido */
-            FrameRequest request = new FrameRequest((short) 201, filename.getBytes());
+            FrameRequest request = new FrameRequest((short) 202, filename.getBytes());
             this.manager.sendSequentialRequest(tracker, request);
 
         } catch(RequestException e) {
