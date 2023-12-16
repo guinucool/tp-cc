@@ -49,6 +49,7 @@ public class RegisterFile extends FSFile {
     /* Construtor de pedido */
     public RegisterFile(RequestFile file) {
         super(file);
+        /* Adicionar verificação da hash */
         this.status = 0;
     }
 
