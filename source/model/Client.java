@@ -2,6 +2,7 @@ package model;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -23,6 +24,7 @@ import runner.frame.FrameRunner;
 import server.RunnerServer;
 import server.ServerException;
 import worker.ServerWorker;
+import tools.DNS;
 import tools.RequestException;
 import tools.RequestManager;
 import worker.DatagramWorker;
@@ -100,7 +102,7 @@ public class Client {
         try {
 
             /* Liga ao servidor e cria um runner para a ligação */
-            Socket server = new Socket(address, port);
+            Socket server = new Socket(DNS.getAddress(address), port);
             this.tracker = new FrameRunner(server);
             RunnerServer listener = new RunnerServer(this.tracker, new FrameWorker(this.tracker, false));
 
@@ -307,13 +309,15 @@ public class Client {
         try {
 
             /* Devolve as informações em formato de node */
-            return new Node(this.transfer.getAddress(), this.transfer.getPort());
+            return new Node(DNS.getName(this.transfer.getAddress()), this.transfer.getPort());
             
         } catch (NodeException e) {
 
             /* Não é preciso tratar esta exceção */
             return null;
 
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("dns-unreachable");
         } finally {
             this.read.unlock();
         }

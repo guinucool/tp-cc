@@ -12,6 +12,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,7 @@ import message.CommunicableException;
 import message.Message;
 import model.Node;
 import model.NodeException;
+import tools.DNS;
 
 public class Datagram extends Message {
 
@@ -433,8 +435,10 @@ public class Datagram extends Message {
 
             byte[] payload = barray.toByteArray();
 
-            return new DatagramPacket(payload, payload.length, InetAddress.getByName(this.node.getAddress()), this.node.getPort());
+            return new DatagramPacket(payload, payload.length, InetAddress.getByName(DNS.getAddress(this.node.getAddress())), this.node.getPort());
 
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("dns-unreachable");
         } catch (IOException e) {
             throw new RuntimeException("datagram-outofmemory");
         }
@@ -493,7 +497,7 @@ public class Datagram extends Message {
             flag &= ~(1 << IF_POSITION);
 
             /* Criação do node */
-            Node node = new Node(packet.getAddress().getHostAddress(), packet.getPort());
+            Node node = new Node(DNS.getName(packet.getAddress().getHostAddress()), packet.getPort());
 
             /* Criação da mensagem */
             Datagram result = new Datagram(identifier, operation, flag, payload, needsAck, isAck, isFragmented, totalSize, fragmentOffset, node);
