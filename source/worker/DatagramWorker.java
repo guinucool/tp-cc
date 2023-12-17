@@ -106,7 +106,9 @@ public class DatagramWorker implements MessageWorker {
                         controller.solveRequest(this.datagram.getIdentifier());
 
                     } catch (DirectoryException | BlockException | FileException e) {
-                        /* Não é preciso tratar a exceção */
+
+                        /* Falha o pedido por resposta inválida */
+                        controller.failRequest(this.datagram.getIdentifier(), new CommunicableException("response-invalid"));
                     }
 
                     return;

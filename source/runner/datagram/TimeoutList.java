@@ -213,6 +213,8 @@ public class TimeoutList {
             /* Verifica se o timeout expirou */
             if (timeout.hasExpired(this.currentTimeout)) {
 
+                System.out.println(timeout);
+
                 /* Remove o timeout da lista */
                 this.list.remove(timeout);
 

@@ -175,6 +175,13 @@ public class Directory {
         if (this.files.size() == 0)
             throw new DirectoryException("directory-empty");
 
+        /* Envia os ficheiros */
+        this.unrestrictedSendFiles(manager, runner);
+    }
+
+    /* Envia os ficheiros para o tracker, sem verificar se existem ficheiros para enviar ou não */
+    private void unrestrictedSendFiles(RequestManager manager, FrameRunner runner) throws CommunicableException, RequestException {
+
         List<byte[]> payload = new ArrayList<>();
 
         for (RegisterFile file : this.files.values()) {
@@ -233,6 +240,10 @@ public class Directory {
 
             /* Apaga o ficheiro em caso de erro */
             file.delete();
+
+            /* Reenvia a verdadeira lista de ficheiros que possuí */
+            this.unrestrictedSendFiles(manager, tcp);
+
             throw e;
         }
     }

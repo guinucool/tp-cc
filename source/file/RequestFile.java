@@ -1,7 +1,9 @@
 package file;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,8 +18,10 @@ import message.Requestable;
 import message.datagram.DatagramRequest;
 import message.frame.FrameRequest;
 import model.Node;
+import model.NodeException;
 import runner.datagram.ReliableRunner;
 import runner.frame.FrameRunner;
+import tools.DNS;
 import tools.RequestException;
 import tools.RequestManager;
 import file.block.Block;
@@ -37,6 +41,7 @@ public class RequestFile extends BlockFile {
     private Map<Integer,Requestable> requests;          /* Mapa de pedidos associados a blocos */
     private Map<Node,Integer> usage;                    /* Estatística que controla o uso de cada node */
     private List<Node> disconnected;                    /* Lista que controla os nodes que não responderam */
+    private Map<Node,Node> translations;                /* Mapa que armazena as traduções já efetuadas */
     private Block current;                              /* Bloco em que está a ser pedido */
 
     /* Construtor parametrizado */
@@ -47,6 +52,7 @@ public class RequestFile extends BlockFile {
         this.requests = new HashMap<>();
         this.usage = new HashMap<>();
         this.disconnected = new ArrayList<>();
+        this.translations = new HashMap<>();
     }
 
     /* Construtor de cópia */
@@ -57,6 +63,7 @@ public class RequestFile extends BlockFile {
         this.requests = new HashMap<>();
         this.usage = new HashMap<>();
         this.disconnected = new ArrayList<>();
+        this.translations = new HashMap<>();
     }
 
     /* Construtor binário */
@@ -67,6 +74,7 @@ public class RequestFile extends BlockFile {
         this.requests = new HashMap<>();
         this.usage = new HashMap<>();
         this.disconnected = new ArrayList<>();
+        this.translations = new HashMap<>();
     }
 
     /* Define a lista de blocos disponíveis */
@@ -94,7 +102,7 @@ public class RequestFile extends BlockFile {
     private void decrementNodeUsage(Node node) {
 
         /* Apenas subtrai se existerem usos do node */
-        if (this.usage.get(node) > 0)
+        if (this.getNodeUsage(node) > 0)
             this.usage.put(node, this.getNodeUsage(node) - 1);
     }
 
@@ -121,7 +129,11 @@ public class RequestFile extends BlockFile {
 
         /* Variavéis de controlo de número de nodes e utilização global */
         int nodes = this.usage.size();
-        int global = this.requests.size();
+        int global = 0;
+
+        /* Percorre o mapa para descobrir o uso global */
+        for (int usage : this.usage.values())
+            global += usage;
 
         /* Devolve a média */
         if (nodes == 0)
@@ -158,21 +170,12 @@ public class RequestFile extends BlockFile {
         int avUsage = this.getAverageUsage();
 
         /* Caso nunca tenha sido usado, esse node será a escolha */
-        if (score == 0 && usage == 0 || avScore == 0)
-            return Integer.MAX_VALUE;
+        if (usage == 0 || score == 0)
+            return usage;
 
-        /* Performance em pontuação */
-        int scorePoints = score / avScore;
+        System.out.println(node + " " + usage + "/" + score);
 
-        /* Caso o node não esteja em uso */
-        if (usage == 0)
-            return scorePoints;
-
-        /* Performance em uso */
-        int usagePoints = avUsage / usage;
-
-        /* Devolve a performance global */
-        return scorePoints * usagePoints;
+        return usage / score;
     }
 
     /* Devolve o tamanho do bloco fornecido */
@@ -187,6 +190,25 @@ public class RequestFile extends BlockFile {
 
         /* Devolve o tamanho */
         return size;
+    }
+
+    /* Traduz um node */
+    public Node getTranslation(Node node) {
+
+        /* Averigua se o node já foi traduzido */
+        if (this.translations.containsKey(node))
+            return this.translations.get(node);
+
+        /* Caso não, executa e armazena a tradução */
+        try {
+            Node translation = new Node(DNS.getAddress(node.getAddress()), node.getPort());
+            this.translations.put(node, translation);
+            
+            return translation;
+
+        } catch (NodeException | UnknownHostException e) {
+            throw new RuntimeException("node-invalid");
+        }
     }
 
     /* Remove pedidos falhados e coloca-os de novo nos disponíveis */
@@ -266,21 +288,24 @@ public class RequestFile extends BlockFile {
 
         /* Variáveis auxiliarers */
         Node best = null;
-        int max = 0;
+        int min = Integer.MAX_VALUE;
 
         /* Procura pelo melhor node para download */
         for (Node node : this.current.getNodes()) {
 
+            /* Traduz o node */
+            Node translated = this.getTranslation(node);
+
             /* Verifica se o node não causou problemas anteriormente */
-            if (!this.disconnected.contains(node)) {
+            if (!this.disconnected.contains(translated)) {
 
                 /* Calcula a performance do node em avaliação */
-                int performance = this.getNodePerformance(node);
+                int performance = this.getNodePerformance(translated);
 
                 /* Verifica se o node é melhor que o melhor atual */
-                if (max < performance) {
-                    best = node;
-                    max = performance;
+                if (min > performance) {
+                    best = translated;
+                    min = performance;
                 }
             }
         }
@@ -342,8 +367,13 @@ public class RequestFile extends BlockFile {
         if (!this.compatibleBlock(block) || !this.wasRequestedTo(nroffset, node))
             throw new FileException("block-incompatible");
 
+        /* Verifica se o ficheiro ainda ou já foi criado */
+        if (!(new File(path + "/" + super.getName())).isFile())
+            throw new FileException("file-inexistent");
+
         /* Escreve no ficheiro já criado */
         try {
+
             RandomAccessFile writer = new RandomAccessFile(path + "/" + super.getName(), "rw");
 
             /* Iniciar no offset */
@@ -351,7 +381,7 @@ public class RequestFile extends BlockFile {
 
             /* Escrever informação */
             writer.write(block.getData());   
-            writer.close();
+            writer.close();   
 
         } catch (IOException e) {
             throw new RuntimeException("file-unwritable");

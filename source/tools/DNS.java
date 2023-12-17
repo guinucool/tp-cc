@@ -46,6 +46,13 @@ public class DNS {
         return host;
     }
 
+    /* Verifica se o nome fornecido é um nome */
+    public static boolean isName(String host) {
+        String PATTERN = "^((0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)\\.){3}(0|1\\d?\\d?|2[0-4]?\\d?|25[0-5]?|[3-9]\\d?)$";
+    
+        return !host.matches(PATTERN);
+    }
+
     /* Encontra o endereço de um host */
     public static String getAddress(String host) throws UnknownHostException {
         return getInetAddress(convertName(host)).getHostAddress();
@@ -53,6 +60,14 @@ public class DNS {
 
     /* Encontra o nome de um host */
     public static String getName(String host) throws UnknownHostException {
-        return simpleName(getInetAddress(convertName(host)).getHostName());
+
+        /* Procura pelo nome */
+        String name = simpleName(getInetAddress(convertName(host)).getCanonicalHostName());
+
+        /* Verifica se o encontrado é um nome */
+        if (!isName(name))
+            name = getName(host);
+
+        return name;
     }
 }

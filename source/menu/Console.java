@@ -97,7 +97,7 @@ public class Console {
                     if (e.getMessage().equals("file-corrupted"))
                         System.out.println("The requested file got corrupted! Please try again later!");
                     else
-                        System.out.println("The requested file has insufficient nodes to be download!");
+                        System.out.println("The requested file has insufficient nodes to be downloaded!");
 
                 } catch (DirectoryException e) {
                     System.out.println("The requested file already exists in the node!");
