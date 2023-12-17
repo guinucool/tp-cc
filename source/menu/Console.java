@@ -28,6 +28,7 @@ public class Console {
         this.menu.addOption("ADDRESS", 0);
         this.menu.addOption("FILES", 0);
         this.menu.addOption("UPDATE", 0);
+        this.menu.addOption("AVAILABLE", 0);
         this.menu.addOption("REQUEST", 1);
         this.menu.addOption("HELP", 0);
     }
@@ -74,6 +75,14 @@ public class Console {
                 }
             }
 
+            /* Handler do comando "AVAILABLE" */
+            if (cmd.equals("AVAILABLE")) {
+
+                /* Processo de pedido e receção da lista de ficheiros */
+                this.control.requestFiles();
+                this.view.printAvailable();
+            }
+
             /* Handler do comando "REQUEST" */
             if (cmd.equals("REQUEST")) {
 
@@ -84,7 +93,12 @@ public class Console {
                 } catch (CommunicableException e) {
                     System.out.println("The requested file does not exist!");
                 } catch (FileException e) {
-                    System.out.println("The requested file has insufficient nodes to be download!");
+
+                    if (e.getMessage().equals("file-corrupted"))
+                        System.out.println("The requested file got corrupted! Please try again later!");
+                    else
+                        System.out.println("The requested file has insufficient nodes to be download!");
+
                 } catch (DirectoryException e) {
                     System.out.println("The requested file already exists in the node!");
                 } 

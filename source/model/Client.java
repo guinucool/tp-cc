@@ -3,6 +3,7 @@ package model;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -11,6 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import file.Directory;
 import file.DirectoryException;
+import file.FSFile;
 import file.FileException;
 import file.RegisterFile;
 import file.RequestFile;
@@ -43,6 +45,7 @@ public class Client {
     private ReliableRunner transfer;                /* Runner que liga o node com nodes */
     private RequestManager manager;                 /* Gesttor de pedidos de mensagens */
     private boolean status;                         /* Status do cliente node em relação ao servidor tracker */
+    private List<FSFile> available;                 /* Lista de ficheiros disponíveis para download */
 
     private ReadWriteLock rwlock = new ReentrantReadWriteLock();        /* Lock de leitura e escrita do cliente */
     private Lock read = this.rwlock.readLock();                         /* Lock de escrita do cliente */
@@ -57,6 +60,7 @@ public class Client {
         this.setTransfer(9090);
         this.manager = new RequestManager(requestWait);
         this.status = true;
+        this.available = new ArrayList<>();
     }
 
     /* Construtor parametrizado com porta */
@@ -66,6 +70,7 @@ public class Client {
         this.setTransfer(9090);
         this.manager = new RequestManager(requestWait);
         this.status = true;
+        this.available = new ArrayList<>();
     }
 
     /* Inicia a instância global de cliente com as propriedades fornecidas e porta 9090 */
@@ -236,6 +241,26 @@ public class Client {
         }
     }
 
+    /* Define a lista de ficheiros vinda do tracker */
+    public void setAvailable(List<FSFile> files) {
+
+        /* Bloqueia a operação de escrita e leitura */
+        this.write.lock();
+
+        try {
+            
+            /* Redefine a lista */
+            this.available = new ArrayList<>();
+
+            /* Coloca todos os ficheiros na lista de recebidos */
+            for (FSFile file : files)
+                this.available.add((FSFile) file.clone());
+
+        } finally {
+            this.write.unlock();
+        }
+    }
+
     /* Devolve o caminho para a diretoria que armazena os ficheiros do node */
     public String getPath() {
 
@@ -339,6 +364,29 @@ public class Client {
         }
     }
 
+    /* Devolve a lista de ficheiros disponíveis no servidor */
+    public List<FSFile> getAvailable() {
+        
+        /* Bloqueia a operação de escrita */
+        this.read.lock();
+
+        try {
+
+            /* Cria a lista de resultados */
+            List<FSFile> files = new ArrayList<>();
+
+            /* Popula a lista */
+            for (FSFile file : this.available)
+                files.add((FSFile) file.clone());
+
+            /* Devolve o resultado obtido */
+            return files;
+
+        } finally {
+            this.read.unlock();
+        }
+    }
+
     /* Envia o registo deste node para o tracker */
     public void sendRegister() throws ClientException {
 
@@ -381,7 +429,7 @@ public class Client {
         }
     }
 
-    /* Envia um pediod de ficheiro para o tracker */
+    /* Envia um pedido de ficheiro para o tracker */
     public void requestFile(String filename) throws ClientException, CommunicableException, FileException, DirectoryException {
 
         /* Bloqueia as operações de escrita e leitura */
@@ -397,6 +445,26 @@ public class Client {
             this.directory.requestFile(this.transfer, this.tracker, this.requestWait, this.manager);
 
         } catch(RequestException e) {
+            this.close();
+            throw new ClientException("connection-closed");
+        } finally {
+            this.write.unlock();
+        }
+    }
+
+    /* Envia um pedido da lista de ficheiros para o tracker */
+    public void requestFiles() throws ClientException {
+
+        /* Bloqueia as operações de escrita e leitura */
+        this.write.lock();
+
+        try {
+
+            /* Cria a mensagem de pedido */
+            FrameRequest request = new FrameRequest((short) 400);
+            this.manager.sendSequentialRequest(tracker, request);
+
+        } catch(RequestException | CommunicableException e) {
             this.close();
             throw new ClientException("connection-closed");
         } finally {

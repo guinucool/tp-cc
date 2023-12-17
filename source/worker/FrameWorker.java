@@ -189,6 +189,16 @@ public class FrameWorker implements MessageWorker {
                 return;
             }
 
+            /* Handler de pedidos de lista de ficheiros */
+            if (this.frame.getFlag() == 400 && this.frame.getNrArguments() == 0) {
+
+                /* Envia a resposta de novo para o node */
+                this.runner.send(new Frame(this.frame.getIdentifier(), (short) 401, view.getFiles()));
+
+                /* Impede a interpretação de continuar */
+                return;
+            }
+
             /* Handler de desconexão */
             if (this.frame.getFlag() == 101 && this.frame.getNrArguments() == 0) {
 
@@ -293,6 +303,21 @@ public class FrameWorker implements MessageWorker {
 
                 /* Atualiza a informação do bloco no ficheiro em pedido */
                 controller.receiveBlock(payload);
+
+                /* Resolve o pedido em sucesso */
+                controller.solveRequest(this.frame.getIdentifier());
+
+                return;
+            }
+
+            /* Handler de listas de ficheiros */
+            if (this.frame.getFlag() == 401) {
+
+                /* Retira o payload da mensagem */
+                List<byte[]> payload = this.frame.getPayloadList();
+
+                /* Atualiza a lista de ficheiros */
+                controller.receiveFiles(payload);
 
                 /* Resolve o pedido em sucesso */
                 controller.solveRequest(this.frame.getIdentifier());

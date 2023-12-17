@@ -47,10 +47,16 @@ public class RegisterFile extends FSFile {
     }
 
     /* Construtor de pedido */
-    public RegisterFile(RequestFile file) {
+    public RegisterFile(RequestFile file, File writen) throws FileException {
         super(file);
-        /* Adicionar verificação da hash */
         this.status = 0;
+        
+        /* Calcula a hash do ficheiro */
+        String hash = md5hash(writen);
+
+        /* Verifica se corresponde à do ficheiro pedido */
+        if (!hash.equals(super.getHash()))
+            throw new FileException("file-corrupted");
     }
 
     /* Definição do status do ficheiro */

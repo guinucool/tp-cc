@@ -1,6 +1,10 @@
 package controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import file.DirectoryException;
+import file.FSFile;
 import file.FileException;
 import file.RequestFile;
 import file.block.Block;
@@ -80,5 +84,19 @@ public class RunnerClientController {
 
         /* Recebe o bloco */
         this.client.receiveBlock(block, node);
+    }
+
+    /* Recebe uma lista de ficheiros ao tracker */
+    public void receiveFiles(List<byte[]> data) throws FileException {
+
+        /* Cria a futura lista de ficheiros */
+        List<FSFile> files = new ArrayList<>();
+
+        /* Popula a lista */
+        for (byte[] file : data)
+            files.add(new FSFile(file));
+
+        /* Define a lista */
+        this.client.setAvailable(files);
     }
 }

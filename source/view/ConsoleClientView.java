@@ -2,6 +2,7 @@ package view;
 
 import java.util.List;
 
+import file.FSFile;
 import file.RegisterFile;
 import model.Client;
 import model.Node;
@@ -89,5 +90,20 @@ public class ConsoleClientView {
 
         /* Imprime as informações */
         System.out.println("The node is running on: " + node.getAddress() + ":" + node.getPort() + "!");
+    }
+
+    /* Imprime a lista de ficheiros disponíveis no servidor */
+    public void printAvailable() {
+
+        /* Vai buscar a lista de ficheiros */
+        List<FSFile> files = this.client.getAvailable();
+
+        /* Imprime as informações */
+        for (FSFile file : files)
+            System.out.println("File - " + file.getName() + " | Size - " + file.getSize() + " bytes");
+
+        /* Caso não haja ficheiros */
+        if (files.size() == 0) 
+            System.out.println("There are no files available for download!");
     }
 }

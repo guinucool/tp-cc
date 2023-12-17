@@ -217,15 +217,24 @@ public class Directory {
             throw new RuntimeException("file-uncreatable");
         }
 
-        /* Pede o ficheiro */
-        this.request.request(udp, tcp, wait, manager);
+        try {
 
-        /* Atualiza a lista de ficheiros */
-        RegisterFile rfile = new RegisterFile(this.request);
-        this.files.put(rfile.getName(), rfile);
+            /* Pede o ficheiro */
+            this.request.request(udp, tcp, wait, manager);
 
-        /* Apaga o pedido */
-        this.request = null;
+            /* Atualiza a lista de ficheiros */
+            RegisterFile rfile = new RegisterFile(this.request, file);
+            this.files.put(rfile.getName(), rfile);
+
+            /* Apaga o pedido */
+            this.request = null;
+
+        } catch (RequestException | CommunicableException | FileException e) {
+
+            /* Apaga o ficheiro em caso de erro */
+            file.delete();
+            throw e;
+        }
     }
 
     /* Recebe partes de um ficheiro em download */

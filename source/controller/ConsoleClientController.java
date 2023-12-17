@@ -41,6 +41,11 @@ public class ConsoleClientController {
         this.client.requestFile(filename);
     }
 
+    /* Pede uma lista de ficheiros ao tracker */
+    public void requestFiles() throws ClientException {
+        this.client.requestFiles();
+    }
+
     /* Informa o tracker que se vai desligar */
     public void disconnect() throws ClientException {
         this.client.sendDisconnect();

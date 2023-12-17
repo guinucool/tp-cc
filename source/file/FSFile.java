@@ -10,7 +10,7 @@ import java.io.IOException;
  * Objeto que define, na generalidade, a representação de um ficheiro que
  * existe fisicamente.
  */
-public abstract class FSFile {
+public class FSFile {
     
     public static final String EMPTY_MD5 = "d41d8cd98f00b204e9800998ecf8427e";          /* Hash de um ficheiro inválido ou vazio */
 
@@ -135,7 +135,9 @@ public abstract class FSFile {
     }
 
     /* Clona um ficheiro para outro idêntico */
-    public abstract Object clone();
+    public Object clone() {
+        return new FSFile(this);
+    }
 
     /* Converte o ficheiro num formato string */
     public String toString() {
