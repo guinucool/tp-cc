@@ -32,7 +32,7 @@ public class ConsoleClientController {
     }
 
     /* Envia a informação dos ficheiros do cliente para o tracker */
-    public void sendFiles() throws ClientException, DirectoryException {
+    public void sendFiles() throws ClientException {
         this.client.sendFiles();
     }
 

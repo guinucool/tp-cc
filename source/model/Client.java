@@ -411,7 +411,7 @@ public class Client {
     }
 
     /* Envia o registo de ficheiros deste node para o tracker */
-    public void sendFiles() throws ClientException, DirectoryException {
+    public void sendFiles() throws ClientException {
         
         /* Bloqueia as operações de escrita e leitura */
         this.write.lock();

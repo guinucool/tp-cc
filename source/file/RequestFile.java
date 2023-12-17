@@ -106,42 +106,6 @@ public class RequestFile extends BlockFile {
             this.usage.put(node, this.getNodeUsage(node) - 1);
     }
 
-    /* Calcula a pontuaçao média global */
-    private int getAverageScore() {
-
-        /* Variavéis de controlo de número de nodes e pontuação global */
-        int nodes = this.statistics.size();
-        int global = 0;
-
-        /* Percorre o mapa para descobrir a pontuação global */
-        for (int score : this.statistics.values())
-            global += score;
-
-        /* Devolve a média */
-        if (nodes == 0)
-            return 0;
-
-        return (global / nodes);
-    }
-
-    /* Calcula o uso médio global */
-    private int getAverageUsage() {
-
-        /* Variavéis de controlo de número de nodes e utilização global */
-        int nodes = this.usage.size();
-        int global = 0;
-
-        /* Percorre o mapa para descobrir o uso global */
-        for (int usage : this.usage.values())
-            global += usage;
-
-        /* Devolve a média */
-        if (nodes == 0)
-            return 0;
-
-        return (global / nodes);
-    }
-
     /* Encontra a pontuanção de um node em específico */
     private int getNodeScore(Node node) {
 
@@ -166,14 +130,12 @@ public class RequestFile extends BlockFile {
         /* Varíaveis auxiliares ao cálculo */
         int score = this.getNodeScore(node);
         int usage = this.getNodeUsage(node);
-        int avScore = this.getAverageScore();
-        int avUsage = this.getAverageUsage();
 
-        /* Caso nunca tenha sido usado, esse node será a escolha */
-        if (usage == 0 || score == 0)
+        if (usage == 0)
             return -1;
 
-        System.out.println(node + " " + usage + "/" + score);
+        if (score == 0)
+            return usage;
 
         return usage / score;
     }

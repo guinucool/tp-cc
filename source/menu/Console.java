@@ -66,13 +66,9 @@ public class Console {
             /* Handler do comando "UPDATE" */
             if (cmd.equals("UPDATE")) {
 
-                /* Processo de envio e verificação de envio */
-                try {
-                    this.control.sendFiles();
-                    this.view.printFileState();
-                } catch (DirectoryException e) {
-                    System.out.println("There are no files available to be sent!");
-                }
+                /* Processo de envio e verificação de envio */    
+                this.control.sendFiles();
+                this.view.printFileState();
             }
 
             /* Handler do comando "AVAILABLE" */

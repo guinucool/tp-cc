@@ -166,14 +166,10 @@ public class Directory {
     }
 
     /* Envia os vários ficheiros no node através do runner para o tracker */
-    public void sendFiles(RequestManager manager, FrameRunner runner) throws DirectoryException, CommunicableException, RequestException {
+    public void sendFiles(RequestManager manager, FrameRunner runner) throws CommunicableException, RequestException {
 
         /* Atualiza a diretoria */
         this.setFiles();
-
-        /* Verifica se existem ficheiros */
-        if (this.files.size() == 0)
-            throw new DirectoryException("directory-empty");
 
         /* Envia os ficheiros */
         this.unrestrictedSendFiles(manager, runner);
