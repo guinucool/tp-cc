@@ -171,7 +171,7 @@ public class RequestFile extends BlockFile {
 
         /* Caso nunca tenha sido usado, esse node será a escolha */
         if (usage == 0 || score == 0)
-            return usage;
+            return -1;
 
         System.out.println(node + " " + usage + "/" + score);
 
