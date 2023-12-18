@@ -196,6 +196,8 @@ public class RequestFile extends BlockFile {
                     this.usage.remove(req.getNode());
 
                     try {
+
+                        /* Traduz o endereço para nome antes de o associar à lista de desconectados */
                         this.disconnected.add(new Node(DNS.getName(req.getNode().getAddress()), req.getNode().getPort()));   
                     } catch (NodeException | UnknownHostException ex) {
                         throw new RuntimeException("node-invalid");

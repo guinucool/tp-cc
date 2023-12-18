@@ -1,10 +1,5 @@
 package message.datagram;
 
-/**
- * Existem exceções neste documentos que foram usadas para definir condições e portanto
- * o seu tratamento de redução será deixado para o futuro, se tal for possível.
- */
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
