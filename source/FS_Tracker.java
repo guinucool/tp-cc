@@ -6,7 +6,7 @@ import server.SocketServer;
 import worker.ServerWorker;
 import tools.DNS;
 
-public class FSTracker {
+public class FS_Tracker {
     
     public static void main(String[] args) {
 
