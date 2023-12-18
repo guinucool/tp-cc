@@ -6,7 +6,7 @@ import model.Client;
 import model.ClientException;
 import tools.DNS;
 
-public class FSNode {
+public class FS_Node {
     
     public static void main(String[] args) {
 
