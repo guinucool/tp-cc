@@ -194,7 +194,12 @@ public class RequestFile extends BlockFile {
                 } catch (CommunicableException e) {
                     this.available.add(block.getKey());
                     this.usage.remove(req.getNode());
-                    this.disconnected.add(req.getNode());
+
+                    try {
+                        this.disconnected.add(new Node(DNS.getName(req.getNode().getAddress()), req.getNode().getPort()));   
+                    } catch (NodeException | UnknownHostException ex) {
+                        throw new RuntimeException("node-invalid");
+                    }
                 } catch (Exception e) {
                     throw new RequestException(e.getMessage());
                 }
@@ -255,11 +260,11 @@ public class RequestFile extends BlockFile {
         /* Procura pelo melhor node para download */
         for (Node node : this.current.getNodes()) {
 
-            /* Traduz o node */
-            Node translated = this.getTranslation(node);
-
             /* Verifica se o node não causou problemas anteriormente */
-            if (!this.disconnected.contains(translated)) {
+            if (!this.disconnected.contains(node)) {
+
+                /* Traduz o node */
+                Node translated = this.getTranslation(node);
 
                 /* Calcula a performance do node em avaliação */
                 int performance = this.getNodePerformance(translated);
