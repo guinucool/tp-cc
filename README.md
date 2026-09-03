@@ -76,8 +76,8 @@ The repository includes example BIND configuration for the `cc2324.local` zone u
 ### 1. Clone the completed branch
 
 ```bash
-git clone --branch baseupdate https://github.com/guinucool/P2PFileSystem_UM.git
-cd P2PFileSystem_UM
+git clone --branch baseupdate https://github.com/guinucool/p2p-filesystem-um.git
+cd p2p-filesystem-um
 ```
 
 If the repository is already cloned:
